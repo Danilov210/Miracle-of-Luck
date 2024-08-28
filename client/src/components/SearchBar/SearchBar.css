@@ -1,0 +1,16 @@
+.search-bar {
+  background-color: white;
+  border: none;
+  padding: 0.1rem 0.1rem; /* Decrease padding for a smaller search bar */
+  width: 295px;
+  font-size: 0.875rem; /* Optional: Decrease the font size */
+  border-radius: 20px;
+}
+
+.search-bar > input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 0.25rem; /* Decrease padding inside the input field */
+  font-size: 0.875rem; /* Match the font size with the search bar */
+}

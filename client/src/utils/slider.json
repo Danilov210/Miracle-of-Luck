@@ -1,0 +1,17 @@
+[
+  {
+    "name": "Like & Share Lottery",
+    "detail": "Simply like the post and share it with your friends to enter for a chance to win amazing prizes.",
+    "image": "./r1.png"
+  },
+  {
+    "name": "Charity & Fundraising",
+    "detail": "Charity & Fundraising events bring communities together to support important causes, raising essential funds through collective generosity and participation.",
+    "image": "./r2.png"
+  },
+  {
+    "name": "Classic Lottery",
+    "detail": "A classic lottery where you select your lucky numbers for a chance to win substantial cash prizes in a traditional draw.",
+    "image": "./r3.png"
+  }
+]

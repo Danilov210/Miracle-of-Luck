@@ -1,0 +1,59 @@
+.h-wrapper {
+  color: white;
+}
+
+.h-container {
+  justify-content: space-between;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  color: var(--secondary);
+}
+
+.h-menu {
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.h-menu > *:hover {
+  cursor: pointer;
+}
+
+.menu-icon {
+  display: none;
+}
+
+@media (max-width: 800px) {
+  .menu-icon {
+    display: block;
+  }
+  .h-menu {
+    color: var(--black);
+    position: absolute;
+    top: 4rem;
+    right: 2rem;
+    background: #d4d4d4; /* Set a grey background color */
+
+    flex-direction: column;
+    font-weight: 500;
+    gap: 2rem;
+    padding: 3rem;
+    border-radius: 10px;
+    align-items: flex-start;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.05);
+    transition: all 300ms ease-in;
+    width: 240px;
+    z-index: 100; /* Very high z-index to be sure it's on top */
+  }
+
+  .search-bar {
+    width: auto; /* Adjust width automatically to fit the button */
+    padding: 0; /* Remove padding */
+  }
+  .search-bar > input {
+    display: none; /* Hide the input field on small screens */
+  }
+  .search-bar > button {
+    width: 100%; /* Make the button take the full width */
+    padding: 0.5rem 1rem; /* Adjust padding for better appearance */
+  }
+}
