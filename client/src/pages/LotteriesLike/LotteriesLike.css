@@ -8,3 +8,12 @@
   border: 1px solid rgba(120, 120, 120, 0.374);
   flex-wrap: nowrap;
 }
+.lottery-container .search-bar .button{
+  border-radius: 30px;
+  font-size: 12px;
+  padding: 10px 15px;
+}
+
+.lottery-container .search-bar input{
+  width: 70%;
+}

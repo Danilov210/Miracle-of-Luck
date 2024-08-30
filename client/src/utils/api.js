@@ -8,7 +8,7 @@ export const api = axios.create({
 
 export const getAllLotteries = async () => {
   try {
-    const responce = await api.get("/lotteriesLike/alllotterylike", {
+    const responce = await api.get(`/lotteriesLike/alllotterylike`, {
       timeout: 10 * 1000,
     });
     if (responce.status === 400 || responce.status === 500) {
@@ -38,9 +38,10 @@ export const getLotteryLike = async (id) => {
 
 export const createUser = async (email, token) => {
   try {
+
     await api.post(
       `/user/register`,
-      { email },
+      { email},
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -48,7 +49,7 @@ export const createUser = async (email, token) => {
       }
     );
   } catch (error) {
-    toast.error("Something went wrong, Please try again");
+    toast.error("Something went wrong Reg, Please try again");
     throw error;
   }
 };
@@ -114,8 +115,8 @@ export const toFav = async (id, email, token) => {
 
 
 export const getAllFav = async (email, token) => {
-  if(!token) return 
-  try{
+  if (!token) return
+  try {
 
     const res = await api.post(
       `/user/allFav`,
@@ -128,20 +129,19 @@ export const getAllFav = async (email, token) => {
         },
       }
     );
-      
+
     return res.data["favResidenciesID"]
 
-  }catch(e)
-  {
+  } catch (e) {
     toast.error("Something went wrong while fetching favs");
     throw e
   }
-} 
+}
 
 
 export const getAllBookings = async (email, token) => {
-  
-  if(!token) return 
+
+  if (!token) return
   try {
     const res = await api.post(
       `/user/allBookings`,
@@ -156,7 +156,7 @@ export const getAllBookings = async (email, token) => {
     );
     return res.data["bookedVisits"];
 
-    
+
   } catch (error) {
     toast.error("Something went wrong while fetching bookings");
     throw error
@@ -166,7 +166,7 @@ export const getAllBookings = async (email, token) => {
 
 export const createResidency = async (data, token) => {
   console.log(data)
-  try{
+  try {
     const res = await api.post(
       `/residency/create`,
       {
@@ -178,8 +178,7 @@ export const createResidency = async (data, token) => {
         },
       }
     )
-  }catch(error)
-  {
+  } catch (error) {
     throw error
   }
 }

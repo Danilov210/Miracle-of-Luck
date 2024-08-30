@@ -16,8 +16,11 @@ const ProfileMenu = ({ user, logout }) => {
     setAnchorEl(null);
   };
 
+  console.log(user)
+
   return (
     <>
+
       <IconButton onClick={handleClick} className="icon-button" style={{ display: 'flex', alignItems: 'center' }}>
         <Avatar src={user?.picture} className="avatar-small" />
         <Typography variant="body1" className="user-name" style={{ marginLeft: '8px' }}>

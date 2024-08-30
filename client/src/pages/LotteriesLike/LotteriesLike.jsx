@@ -1,12 +1,14 @@
-import React from "react";
-import "./LotteriesLike.css";
+import React, { useState } from "react";
 import SearchBar from "../../components/SearchBar/SearchBar";
+import "./LotteriesLike.css";
 import useLotteries from "../../hooks/useLotteries";
 import { PuffLoader } from "react-spinners";
 import LotteryLikeCard from "../../components/LotteryLikeCard/LotteryLikeCard"
 
 const LotteriesLike = () => {
   const { data, isError, isLoading } = useLotteries();
+  const [filter, setFilter] = useState("");
+
   if (isError) {
     return (
       <div className="wrapper">
@@ -14,6 +16,7 @@ const LotteriesLike = () => {
       </div>
     );
   }
+
   if (isLoading) {
     return (
       <div className="wrepper flexCenter" style={{ height: "60vh" }}>
@@ -27,14 +30,24 @@ const LotteriesLike = () => {
       </div>
     );
   }
+
   return (
     <div className="wrapper">
       <div className="flexColCenter paddings innerWidht lottery-container">
-        <SearchBar />
-        <div className="paddings flexCenter lotteries">
-          {data.map((card, i) => (
-            <LotteryLikeCard card={card} key={i} />
-          ))}
+        <SearchBar filter={filter} setFilter={setFilter} />
+        <div className="paddings flexCenter lottery">
+          {
+            data
+              .filter(
+                (property) =>
+                  property.title.toLowerCase().includes(filter.toLowerCase()) ||
+                  property.city.toLowerCase().includes(filter.toLowerCase()) ||
+                  property.country.toLowerCase().includes(filter.toLowerCase())
+              )
+              .map((card, i) => (
+                <LotteryLikeCard card={card} key={i} />
+              ))
+          }
         </div>
       </div>
     </div>

@@ -1,0 +1,102 @@
+[
+    {
+        "_id": {
+            "$oid": "6490e2d5d52203e45f037610"
+        },
+        "hosted": "John Doe",
+        "title": "Mega Jackpot",
+        "description": "A chance to win big in the Mega Jackpot lottery.",
+        "startDate": {
+            "$date": "2023-06-15T00:00:00.000Z"
+        },
+        "endDate": {
+            "$date": "2023-07-15T00:00:00.000Z"
+        },
+        "lotteryStatus": "Open",
+        "createdAt": {
+            "$date": "2023-06-01T10:00:00.000Z"
+        },
+        "updatedAt": {
+            "$date": "2023-06-10T12:00:00.000Z"
+        },
+        "ownerId": {
+            "$oid": "6439011d74446601d6fce96f"
+        },
+        "tickets": [
+            {
+                "_id": {
+                    "$oid": "6439011d74446601d6fce96a"
+                },
+                "lotteryId": {
+                    "$oid": "6490e2d5d52203e45f037610"
+                },
+                "userId": {
+                    "$oid": "6439011d74446601d6fce96b"
+                },
+                "ticketNumber": "123456",
+                "purchaseDate": {
+                    "$date": "2023-06-05T10:00:00.000Z"
+                },
+                "status": "Active"
+            },
+            {
+                "_id": {
+                    "$oid": "6439011d74446601d6fce96c"
+                },
+                "lotteryId": {
+                    "$oid": "6490e2d5d52203e45f037610"
+                },
+                "userId": {
+                    "$oid": "6439011d74446601d6fce96d"
+                },
+                "ticketNumber": "789012",
+                "purchaseDate": {
+                    "$date": "2023-06-06T11:00:00.000Z"
+                },
+                "status": "Active"
+            }
+        ]
+    },
+    {
+        "_id": {
+            "$oid": "6490e2d5d52203e45f037611"
+        },
+        "hosted": "Jane Smith",
+        "title": "Super Summer Lotto",
+        "description": "Join the Super Summer Lotto for your chance to win amazing prizes.",
+        "startDate": {
+            "$date": "2023-07-01T00:00:00.000Z"
+        },
+        "endDate": {
+            "$date": "2023-08-01T00:00:00.000Z"
+        },
+        "lotteryStatus": "Open",
+        "createdAt": {
+            "$date": "2023-06-15T11:00:00.000Z"
+        },
+        "updatedAt": {
+            "$date": "2023-06-20T14:00:00.000Z"
+        },
+        "ownerId": {
+            "$oid": "6439011d74446601d6fce96e"
+        },
+        "tickets": [
+            {
+                "_id": {
+                    "$oid": "6439011d74446601d6fce96f"
+                },
+                "lotteryId": {
+                    "$oid": "6490e2d5d52203e45f037611"
+                },
+                "userId": {
+                    "$oid": "6439011d74446601d6fce970"
+                },
+                "ticketNumber": "345678",
+                "purchaseDate": {
+                    "$date": "2023-07-02T09:00:00.000Z"
+                },
+                "status": "Active"
+            }
+        ]
+    }
+]

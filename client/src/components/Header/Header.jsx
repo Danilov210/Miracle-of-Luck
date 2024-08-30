@@ -1,22 +1,17 @@
 import React, { useEffect, useState } from "react";
 import "./Header.css";
 import { BiMenuAltRight } from "react-icons/bi";
-import { getMenuStyles } from "../../utils/common";
 import useHeaderColor from "../../hooks/useHeaderColor";
 import OutsideClickHandler from "react-outside-click-handler";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import ProfileMenu from "../ProfileMenu/ProfileMenu";
-import useAuthCheck from "../../hooks/UseAuthCheck";
 
 const Header = () => {
   const [isScreenSmall, setIsScreenSmall] = useState(window.innerWidth <= 800);
   const [menuOpened, setMenuOpened] = useState(false);
   const headerColor = useHeaderColor();
-  const [modalOpened, setModalOpened] = useState(false);
   const { loginWithRedirect, isAuthenticated, user, logout } = useAuth0();
-  const { validateLogin } = useAuthCheck();
-  const navigate = useNavigate(); // Use useNavigate hook her
 
   // Update isScreenSmall when the window is resized
   useEffect(() => {
@@ -35,12 +30,6 @@ const Header = () => {
   const getMenuStyles = (menuOpened) => {
     if (document.documentElement.clientWidth <= 800) {
       return { right: !menuOpened && "-100%" };
-    }
-  };
-
-  const handleAddLotteryClick = () => {
-    if (validateLogin()) {
-      setModalOpened(true);
     }
   };
 

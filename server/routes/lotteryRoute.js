@@ -1,4 +1,5 @@
 import express from "express";
+import jwtCheck from "../config/auth0Config.js";
 import {
   createResidency,
   getAllLotteries,
@@ -7,7 +8,7 @@ import {
 
 const router = express.Router();
 
-router.post("/create", createResidency);
+router.post("/create", jwtCheck, createResidency);
 router.get("/alllotterylike", getAllLotteries);
 router.get("/:id", getResidency);
 
