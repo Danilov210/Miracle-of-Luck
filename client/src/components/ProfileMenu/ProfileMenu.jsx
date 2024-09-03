@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Avatar, Menu, MenuItem, IconButton, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
@@ -15,14 +14,19 @@ const ProfileMenu = ({ user, logout }) => {
   const handleClose = () => {
     setAnchorEl(null);
   };
-
-  console.log(user)
-
+  user.name="Dibil";
+  user.balance=0;
+  console.log(user);
   return (
     <>
-
       <IconButton onClick={handleClick} className="icon-button" style={{ display: 'flex', alignItems: 'center' }}>
-        <Avatar src={user?.picture} className="avatar-small" />
+        <Avatar
+          src={user?.picture || "/path/to/default/image.jpg"} // Fallback image
+          className="avatar-small"
+          alt={user?.name || "User Avatar"} // Alternative text
+          sx={{ width: 40, height: 40 }} // Ensure consistent sizing
+          onError={(e) => { e.target.src = "/path/to/default/image.jpg"; }} // Fallback if image fails to load
+        />
         <Typography variant="body1" className="user-name" style={{ marginLeft: '8px' }}>
           {user?.name}
         </Typography>
@@ -32,12 +36,12 @@ const ProfileMenu = ({ user, logout }) => {
         open={Boolean(anchorEl)}
         onClose={handleClose}
         anchorOrigin={{
-          vertical: 'bottom', // Adjust as needed
-          horizontal: 'right', // Adjust as needed
+          vertical: 'bottom',
+          horizontal: 'right',
         }}
         transformOrigin={{
-          vertical: 'top', // Adjust as needed
-          horizontal: 'right', // Adjust as needed
+          vertical: 'top',
+          horizontal: 'right',
         }}
       >
         <MenuItem onClick={() => { handleClose(); navigate("/favourites"); }}>

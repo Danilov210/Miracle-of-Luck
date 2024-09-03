@@ -35,45 +35,96 @@ enum LotteryType {
 }
 
 model User {
-    id                      String        @id @default(auto()) @map("_id") @db.ObjectId
-    firstName               String?
-    lastName                String?
-    email                   String        @unique
-    picture                 String?
-    password                String?
-    balance                 Float         @default(0)
-    accountStatus           AccountStatus @default(Active)
-    DataOfBirth             DateTime?
-    LotteryTicketPurchase   Json[]  
-    ownedLotteries          LotteryLike[] @relation("Owner")
-    transactionHistory      Transaction[] @relation("UserTransactions") 
-    conditions              String[]
+    id                          String              @id @default(auto()) @map("_id") @db.ObjectId
+    firstName                   String?
+    lastName                    String?
+    email                       String              @unique
+    picture                     String?
+    password                    String?
+    balance                     Float               @default(0)
+    accountStatus               AccountStatus       @default(Active)
+    DataOfBirth                 DateTime?
+    LotteryTicketPurchase       Json[]  
+    LotteryFundraising          Json[]
+    LotteryClassic              Json[]
+    ownedLotteriesLike          LotteryLike[]       @relation("Owner") 
+    ownedLotteriesFundraising   LotteryFundraising[]    @relation("Owner") 
+    ownedLotteriesClassic       LotteryClassic[]    @relation("Owner") 
 
+    transactionHistory          Transaction[]       @relation("UserTransactions") 
 }
 
 model LotteryLike {
-    id              String        @id @default(auto()) @map("_id") @db.ObjectId
-    hosted          String
-    title           String 
-    description     String? 
-    startDate       DateTime      @default(now())
-    endDate         DateTime        
-    lotteryStatus   LotteryStatus @default(Open) 
-    createdAt       DateTime      @default(now()) 
-    updatedAt       DateTime      @updatedAt
-    owner           User          @relation("Owner", fields: [ownerId], references: [id]) 
-    ownerId         String        @db.ObjectId 
-    tickets         Ticket[]      @relation("UserTicket")
-    }
+    id                          String        @id @default(auto()) @map("_id") @db.ObjectId
+    hosted                      String
+    title                       String? 
+    description                 String? 
+    image                       String?
+    paticipationdescription     String? 
+    startDate                   DateTime      @default(now())
+    endDate                     DateTime        
+    lotteryStatus               LotteryStatus @default(Open) 
+    createdAt                   DateTime      @default(now()) 
+    updatedAt                   DateTime      @updatedAt
+    conditions                  Json[]
+    prizes                      Json[]
+    link                        String        @unique
+    owner                       User          @relation("Owner", fields: [ownerEmail], references: [email]) 
+    ownerEmail                  String   
+    tickets                     Ticket[]      @relation("UserTicket")
+}
+
+model LotteryFundraising {
+    id                          String        @id @default(auto()) @map("_id") @db.ObjectId
+    hosted                      String
+    title                       String? 
+    description                 String? 
+    image                       String?
+    paticipationdescription     String? 
+    startDate                   DateTime      @default(now())
+    endDate                     DateTime        
+    lotteryStatus               LotteryStatus @default(Open) 
+    createdAt                   DateTime      @default(now()) 
+    updatedAt                   DateTime      @updatedAt
+    price                       Int
+    prizes                      Json[]
+    owner                       User          @relation("Owner", fields: [ownerEmail], references: [email]) 
+    ownerEmail                  String   
+    tickets                     Ticket[]      @relation("UserTicket")
+}
+
+model LotteryClassic {
+    id                          String        @id @default(auto()) @map("_id") @db.ObjectId
+    hosted                      String
+    title                       String? 
+    description                 String? 
+    image                       String?
+    paticipationdescription     String? 
+    startDate                   DateTime      @default(now())
+    endDate                     DateTime        
+    lotteryStatus               LotteryStatus @default(Open) 
+    createdAt                   DateTime      @default(now()) 
+    updatedAt                   DateTime      @updatedAt
+    availableNumberRange        Int
+    drawnNumbersCount           Int    
+    price                       Int
+    prizes                      Json[]
+    owner                       User          @relation("Owner", fields: [ownerEmail], references: [email]) 
+    ownerEmail                  String   
+    tickets                     Ticket[]      @relation("UserTicket")
+}
 
 model Ticket {
-  id           String       @id @default(auto()) @map("_id") @db.ObjectId
-  lotteryType  LotteryType?  
-  lottery      LotteryLike  @relation("UserTicket", fields: [lotteryId], references: [id]) 
-  lotteryId    String       @db.ObjectId 
-  ticketNumber String       @unique 
-  purchaseDate DateTime     @default(now()) 
-  status       TicketStatus @default(Active) 
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  lotteryType  LotteryType   // Enum to specify the type of lottery (Like, Classic, Fundraising)
+  lotteryId    String        @db.ObjectId // Foreign key to either LotteryLike or LotteryFundraising
+  ticketNumber String        @unique 
+  purchaseDate DateTime      @default(now()) 
+  status       TicketStatus  @default(Active) 
+
+  lotteryClassic      LotteryClassic?     @relation("UserTicket", fields: [lotteryId], references: [id])
+  lotteryLike         LotteryLike?        @relation("UserTicket", fields: [lotteryId], references: [id])
+  lotteryFundraising  LotteryFundraising? @relation("UserTicket", fields: [lotteryId], references: [id])
 
     @@unique(fields: [id,lotteryId])
 }

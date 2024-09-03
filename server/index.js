@@ -19,4 +19,4 @@ app.listen(PORT, () => {
 });
 
 app.use("/api/user", userRoute);
-app.use("/api/lotteriesLike", lotteryRoute);
+app.use("/api/lotteries", lotteryRoute);

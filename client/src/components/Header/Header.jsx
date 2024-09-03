@@ -6,14 +6,23 @@ import OutsideClickHandler from "react-outside-click-handler";
 import { Link, NavLink } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import ProfileMenu from "../ProfileMenu/ProfileMenu";
+import CreateLotteryLike from "../CreateLotteryLike/CreateLotteryLike";
+import useAuthCheck from "../../hooks/useAuthCheck.jsx";
 
 const Header = () => {
   const [isScreenSmall, setIsScreenSmall] = useState(window.innerWidth <= 800);
   const [menuOpened, setMenuOpened] = useState(false);
+  const [modalOpened, setModalOpened] = useState(false);
   const headerColor = useHeaderColor();
   const { loginWithRedirect, isAuthenticated, user, logout } = useAuth0();
+  const { validateLogin } = useAuthCheck();
 
-  // Update isScreenSmall when the window is resized
+  const handleCreateLotteryLikeClick = () => {
+    if (validateLogin()) {
+      setModalOpened(true);
+    }
+  };
+
   useEffect(() => {
     const handleResize = () => {
       setIsScreenSmall(window.innerWidth <= 800);
@@ -21,29 +30,20 @@ const Header = () => {
 
     window.addEventListener("resize", handleResize);
 
-    // Clean up the event listener on component unmount
     return () => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
 
-  const getMenuStyles = (menuOpened) => {
-    if (document.documentElement.clientWidth <= 800) {
-      return { right: !menuOpened && "-100%" };
-    }
-  };
+  const getMenuStyles = (menuOpened) => ({
+    right: document.documentElement.clientWidth <= 800 && !menuOpened ? "-100%" : "0"
+  });
 
   return (
     <section className="h-wrapper" style={{ background: headerColor }}>
       <div className="flexCenter paddings innerWidh h-container">
-        {/* logo */}
         <Link to="/">
-          <img
-            src="./BlackLogo.jpg"
-            alt="logo"
-            width={100}
-            style={{ borderRadius: "10%" }}
-          />
+          <img src="./BlackLogo.jpg" alt="logo" width={100} style={{ borderRadius: "10%" }} />
         </Link>
 
         <OutsideClickHandler
@@ -52,18 +52,16 @@ const Header = () => {
           }}
         >
           <div className="flexCenter h-menu" style={getMenuStyles(menuOpened)}>
-            {/* Show login/logout button first on small screens */}
-            {isScreenSmall &&
-              (!isAuthenticated ? (
-                <button
-                  className="button button-green"
-                  onClick={loginWithRedirect}
-                >
+            {/* Conditionally render login/logout based on screen size */}
+            {isScreenSmall ? (
+              !isAuthenticated ? (
+                <button className="button button-green" onClick={loginWithRedirect}>
                   Login
                 </button>
               ) : (
                 <ProfileMenu user={user} logout={logout} />
-              ))}
+              )
+            ) : null}
 
             <NavLink to="/lotteries">
               <button className="button button-blue">Lotteries</button>
@@ -76,24 +74,17 @@ const Header = () => {
               <button className="button button-blue">Create Lottery</button>
             </Link>
 
-            {/* Show login/logout button normally on larger screens */}
-            {!isScreenSmall &&
-              (!isAuthenticated ? (
-                <button
-                  className="button button-green"
-                  onClick={loginWithRedirect}
-                >
-                  Login
-                </button>
-              ) : (
-                <ProfileMenu user={user} logout={logout} />
-              ))}
+            {/* Show login/logout button on larger screens */}
+            {!isScreenSmall && !isAuthenticated ? (
+              <button className="button button-green" onClick={loginWithRedirect}>
+                Login
+              </button>
+            ) : (
+              !isScreenSmall && <ProfileMenu user={user} logout={logout} />
+            )}
           </div>
         </OutsideClickHandler>
-        <div
-          className="menu-icon"
-          onClick={() => setMenuOpened((prev) => !prev)}
-        >
+        <div className="menu-icon" onClick={() => setMenuOpened((prev) => !prev)}>
           <BiMenuAltRight size={30} />
         </div>
       </div>

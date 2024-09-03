@@ -1,10 +1,10 @@
 import React, { useContext, useState } from "react";
 import { useMutation, useQuery } from "react-query";
 import { useLocation } from "react-router-dom";
-import { getLotteryLike, removeBooking } from "../../utils/api";
+import { getLotteryClassic } from "../../utils/api";
 import { PuffLoader } from "react-spinners";
 import { AiFillHeart } from "react-icons/ai";
-import "./LotteryLike.css";
+import "./LotteryClassic.css";
 import useAuthCheck from "../../hooks/useAuthCheck";
 import { useAuth0 } from "@auth0/auth0-react";
 import UserDetailContext from "../../context/UserDetailContext";
@@ -13,12 +13,12 @@ import LotteryticketPurchase from "../../components/LotteryTicketPurchase/Lotter
 
 
 
-const LotteryLike = () => {
+const LotteryClassic = () => {
 
     const { pathname } = useLocation();
     const id = pathname.split("/").slice(-1)[0];
-    const { data, isLoading, isError } = useQuery(["LotteryLike", id], () =>
-        getLotteryLike(id)
+    const { data, isLoading, isError } = useQuery(["lotteryclassic", id], () =>
+        getLotteryClassic(id)
     );
     const [modalOpened, setModalOpened] = useState(false);
     const { validateLogin } = useAuthCheck();
@@ -133,4 +133,4 @@ const LotteryLike = () => {
     );
 };
 
-export default LotteryLike;
+export default LotteryClassic;

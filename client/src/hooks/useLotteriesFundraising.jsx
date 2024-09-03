@@ -1,11 +1,11 @@
 import React from "react";
 import { isError, useQuery } from "react-query";
-import { getAllLotteriesLike } from "../utils/api";
+import { getAllLotteriesFundraising } from "../utils/api";
 
-const useLotteriesLike = () => {
+const useLotteriesFundraising = () => {
   const { data, isError, isLoading, refetch } = useQuery(
-    "allLotteriesLike",
-    getAllLotteriesLike,
+    "allLotteriesfundraising",
+    getAllLotteriesFundraising,
     { refetchOnWindowFocus: false }
   );
   return {
@@ -16,4 +16,4 @@ const useLotteriesLike = () => {
   };
 };
 
-export default useLotteriesLike;
+export default useLotteriesFundraising;

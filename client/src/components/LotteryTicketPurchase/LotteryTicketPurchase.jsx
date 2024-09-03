@@ -5,7 +5,7 @@ import { useMutation } from "react-query";
 import { bookVisit } from "../../utils/api.js";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
-import UserDetailContext from "../../context/UserDetailContex.js";
+import UserDetailContext from "../../context/UserDetailContext.js";
 
 const LotteryTicketPurchase = ({ opened, setOpened, lotteryId, email, }) => {
   const [value, setValue] = useState(null);

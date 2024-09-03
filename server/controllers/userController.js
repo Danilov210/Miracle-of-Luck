@@ -1,21 +1,61 @@
 import asyncHandler from "express-async-handler";
 import { prisma } from "../config/prismaConfig.js";
 
-//function create user
+
+ //++ Function to register a new user or return existing user details.
 export const createUser = asyncHandler(async (req, res) => {
-  console.log("creating a user");
+  // Extract user details from the request body, defaulting to an empty object if not provided
+  const { email, firstName, lastName, picture } = req.body.data || {};
 
-  let { email } = req.body;
+  // Validate that the email is provided
+  if (!email) {
+    return res.status(400).send({ message: "Email is required" }); // Send a 400 Bad Request if email is missing
+  }
 
-  const userExists = await prisma.user.findUnique({ where: { email: email } });
-  if (!userExists) {
-    const user = await prisma.user.create({ data: req.body });
-    res.send({
-      massage: "User registered successfully",
-      user: user,
-    });
-  } else res.status(201).send({ massage: "User already registered" });
+  try {
+    // Normalize email to lowercase and remove extra whitespace
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // Check if a user with the provided email already exists in the database
+    const userExists = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+
+    if (!userExists) {
+      console.log("User does not exist. Registering new user.");
+
+      // Create a new user in the database with the provided details
+      const user = await prisma.user.create({
+        data: {
+          email: normalizedEmail, // Store the normalized email
+          firstName,
+          lastName,
+          picture,
+        },
+      });
+
+      // Return success response with the newly created user details
+      return res.status(201).send({
+        message: "User registered successfully",
+        user: user,
+      });
+
+    } else {
+      console.log("User already exists. Returning existing user details.");
+
+      // Return a response indicating the user already exists and provide the user details
+      return res.status(200).send({ // Changed status to 200 OK since it's not a new creation
+        message: "User already registered",
+        user: userExists // Include the existing user details in the response
+      });
+    }
+  } catch (err) {
+    // Log the error for debugging purposes
+    console.error("Error creating user:", err.message);
+
+    // Return a 500 Internal Server Error response with the error message
+    return res.status(500).send({ message: "An error occurred while creating the user." });
+  }
 });
+
 
 //function to  book visit to residncy
 export const bookVisit = asyncHandler(async (req, res) => {
@@ -139,3 +179,32 @@ export const getallFav = asyncHandler(async (req, res) => {
     throw new Error(err.massage);
   }
 });
+
+
+// Function to get a user and their owned lotteries
+export const getUserWithLotteries = asyncHandler(async (req, res) => {
+  const { email } = req.params; // Assuming email is provided as a route parameter
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email },
+
+    });
+
+    // Check if user exists
+    if (!user) {
+      return res.status(404).send({ message: "User not found." });
+    }
+
+    // Send the user data with owned lotteries
+    res.send(user);
+  } catch (err) {
+    console.error("Error fetching user with lotteries:", err.message);
+    res.status(500).send({ message: "Failed to fetch user details. Please try again." });
+  }
+});
+
+
+
+
+

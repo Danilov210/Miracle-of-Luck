@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import SearchBar from "../../components/SearchBar/SearchBar";
-import "./LotteriesLike.css";
-import useLotteriesLike from "../../hooks/useLotteries";
+import "./LotteriesFundraising.css";
+import useLotteriesFundraising from "../../hooks/useLotteriesFundraising";
 import { PuffLoader } from "react-spinners";
-import LotteryLikeCard from "../../components/LotteryLikeCard/LotteryLikeCard"
+import LotteryFundraisingCard from "../../components/LotteryFundraisingCard/LotteryFundraisingCard"
 
-const LotteriesLike = () => {
-  const { data, isError, isLoading } = useLotteriesLike();
+const LotteriesFundraising = () => {
+  const { data, isError, isLoading } = useLotteriesFundraising();
   const [filter, setFilter] = useState("");
 
   if (isError) {
@@ -45,7 +45,7 @@ const LotteriesLike = () => {
                   property.country.toLowerCase().includes(filter.toLowerCase())
               )
               .map((card, i) => (
-                <LotteryLikeCard card={card} key={i} />
+                <LotteryFundraisingCard card={card} key={i} />
               ))
           }
         </div>
@@ -54,4 +54,4 @@ const LotteriesLike = () => {
   );
 };
 
-export default LotteriesLike;
+export default LotteriesFundraising;

@@ -1,0 +1,43 @@
+/* CreateLotteryLike.css */
+
+.text-field-container {
+  margin-bottom: 15rem; /* Adds space between each text field */
+}
+
+.dialog-title {
+  text-align: center;
+  font-size: 1.5rem;
+  margin-bottom: 1rem; /* Adds space below the title */
+}
+
+.dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* Adds uniform spacing between all items */
+}
+
+.button {
+  font-weight: 500;
+  padding: 0.6rem 1.4rem;
+  color: white;
+  border: none;
+  border-radius: 64px;
+  transition: all 300ms ease-in;
+}
+
+.button:hover {
+  cursor: pointer;
+  transform: scale(1.1);
+}
+
+.button-blue {
+  background-color: var(--blue);
+  margin: 0 auto; /* Center the button horizontally */
+}
+.NavBut {
+  display: flex; /* Ensures buttons are in a row */
+  justify-content: center; /* Centers the button group horizontally */
+  align-items: center; /* Aligns buttons vertically */
+  gap: 2rem; /* Adds 2rem gap between the buttons */
+  margin-top: 3rem; /* Adds top margin */
+}

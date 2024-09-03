@@ -1,15 +1,15 @@
 import React from "react";
-import "./LotteryLikeCard.css";
+import "./LotteryFundraisingCard.css";
 import { AiFillHeart } from "react-icons/ai";
 import { truncate } from "lodash";
 import { useNavigate } from "react-router-dom";
 
-const LotteryLikeCard = ({ card }) => {
+const LotteryFundraisingCard = ({ card }) => {
   const navigate = useNavigate();
   return (
     <div
       className="flexColStart r-card"
-      onClick={() => navigate(`../LotteryLike/${card.id}`)}
+      onClick={() => navigate(`../LotteryFundraising/${card.id}`)}
     >
       <AiFillHeart size={30} color="grey" />
       <img src={card.image} alt="home" />
@@ -23,4 +23,4 @@ const LotteryLikeCard = ({ card }) => {
   );
 };
 
-export default LotteryLikeCard;
+export default LotteryFundraisingCard;
