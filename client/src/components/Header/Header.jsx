@@ -6,22 +6,12 @@ import OutsideClickHandler from "react-outside-click-handler";
 import { Link, NavLink } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import ProfileMenu from "../ProfileMenu/ProfileMenu";
-import CreateLotteryLike from "../CreateLotteryLike/CreateLotteryLike";
-import useAuthCheck from "../../hooks/useAuthCheck.jsx";
 
 const Header = () => {
   const [isScreenSmall, setIsScreenSmall] = useState(window.innerWidth <= 800);
   const [menuOpened, setMenuOpened] = useState(false);
-  const [modalOpened, setModalOpened] = useState(false);
   const headerColor = useHeaderColor();
   const { loginWithRedirect, isAuthenticated, user, logout } = useAuth0();
-  const { validateLogin } = useAuthCheck();
-
-  const handleCreateLotteryLikeClick = () => {
-    if (validateLogin()) {
-      setModalOpened(true);
-    }
-  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -36,8 +26,12 @@ const Header = () => {
   }, []);
 
   const getMenuStyles = (menuOpened) => ({
-    right: document.documentElement.clientWidth <= 800 && !menuOpened ? "-100%" : "0"
+    right: document.documentElement.clientWidth <= 800 && !menuOpened ? "-100%" : "0",
   });
+
+  const handleMenuClose = () => {
+    setMenuOpened(false);
+  };
 
   return (
     <section className="h-wrapper" style={{ background: headerColor }}>
@@ -52,7 +46,6 @@ const Header = () => {
           }}
         >
           <div className="flexCenter h-menu" style={getMenuStyles(menuOpened)}>
-            {/* Conditionally render login/logout based on screen size */}
             {isScreenSmall ? (
               !isAuthenticated ? (
                 <button className="button button-green" onClick={loginWithRedirect}>
@@ -63,18 +56,17 @@ const Header = () => {
               )
             ) : null}
 
-            <NavLink to="/lotteries">
+            <NavLink to="/lotteries" onClick={handleMenuClose}>
               <button className="button button-blue">Lotteries</button>
             </NavLink>
-            <Link to="/results">
+            <Link to="/results" onClick={handleMenuClose}>
               <button className="button button-blue">Results</button>
             </Link>
 
-            <Link to="/create">
+            <Link to="/create" onClick={handleMenuClose}>
               <button className="button button-blue">Create Lottery</button>
             </Link>
 
-            {/* Show login/logout button on larger screens */}
             {!isScreenSmall && !isAuthenticated ? (
               <button className="button button-green" onClick={loginWithRedirect}>
                 Login

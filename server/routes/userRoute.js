@@ -2,22 +2,24 @@ import express from "express";
 import jwtCheck from "../config/auth0Config.js";
 
 import {
-  bookVisit,
-  cancelBooking,
   createUser,
-  getUserWithLotteries,
-  getallFav,
-  toFav,
+  getUserOwnedLottories,
+  buyTicketFundraising,
+  buyTicketClassic,
+  getUserOwnedTickets,
+  cancelTicket
 } from "../controllers/userController.js";
 
 const router = express.Router();
-
-router.post("/bookVisit/:id", bookVisit);
-router.get("/allUserCreatedLottories", getUserWithLotteries);
-router.post("/remuveBooking/:id", cancelBooking);
-router.post("/toFav/:rid", toFav);
-router.post("/allFav/", getallFav);
+router.post("/BuyTicketFundraising", buyTicketFundraising);
+router.post("/BuyTicketClassic", buyTicketClassic);
+router.post("/UserOwnedLottories", getUserOwnedLottories);
+router.post("/UserLottoriesTickets", getUserOwnedTickets);
 router.post("/register", jwtCheck, createUser);
+router.post("/CancelTicket", cancelTicket);
+
+
+
 // router.post("/bookVisit/:id", jwtCheck, bookVisit);
 // router.post("/allBookings", getAllBookings);
 // router.post("/remuveBooking/:id", jwtCheck, cancelBooking);

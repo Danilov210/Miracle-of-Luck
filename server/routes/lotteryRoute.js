@@ -10,11 +10,11 @@ import {
   getLotteryLike,
   getLotteryFundraising,
   getLotteryClassic,
-
+  getNumberOfTicketsForLottery,
 } from "../controllers/LotteryController.js";
 
 const router = express.Router();
-
+router.post("/numberoftickets", getNumberOfTicketsForLottery);
 router.post("/createLike", createLotteryLike);
 router.post("/createFundraising", createLotteryFundraising);
 router.post("/createClassic", createLotteryClassic);

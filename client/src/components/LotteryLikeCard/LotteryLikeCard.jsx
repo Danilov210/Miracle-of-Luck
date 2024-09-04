@@ -11,7 +11,7 @@ const LotteryLikeCard = ({ card }) => {
       className="flexColStart r-card"
       onClick={() => navigate(`../LotteryLike/${card.id}`)}
     >
-      <AiFillHeart size={30} color="grey" />
+      <AiFillHeart size={30} color="transparent" />
       <img src={card.image} alt="home" />
       <span className="primaryText">
         {truncate(card.title, { length: 15 })}

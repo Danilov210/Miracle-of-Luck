@@ -1,4 +1,4 @@
-import { Suspense, useState } from "react";
+import React, { Suspense, useState } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./App.css";
 import Website from "./pages/Website";
@@ -17,8 +17,9 @@ import UserDetailContext from "./context/UserDetailContext";
 import LotteriesMenuPage from "./pages/LotteriesMenuPage/LotteriesMenuPage";
 import ResultsMenuPage from "./pages/ResultsMenuPage/ResultsMenuPage";
 import CreateMenuPage from "./pages/CreateMenuPage/CreateMenuPage";
+import OwnedLotteries from "./pages/OwnedLotteries/OwnedLotteries";
+import OwnedTickets from "./pages/OwnedTickets/OwnedTickets";
 import { MantineProvider } from "@mantine/core";
-
 
 function App() {
   const queryClient = new QueryClient();
@@ -30,11 +31,10 @@ function App() {
     DataOfBirth: null,
     accountStatus: null,
     balance: null,
-
   });
 
   return (
-    <MantineProvider withGlobalStyles withNormalizeCSS> {/* Wrap with MantineProvider */}
+    <MantineProvider withGlobalStyles withNormalizeCSS>
       <UserDetailContext.Provider value={{ userDetails, setUserDetails }}>
         <QueryClientProvider client={queryClient}>
           <BrowserRouter>
@@ -42,38 +42,44 @@ function App() {
               <Routes>
                 <Route element={<Layout />}>
                   <Route path="/" element={<Website />} />
-
-                  {/* Main Lotteries route */}
                   <Route path="/lotteries">
                     <Route index element={<LotteriesMenuPage />} />
-
-                    {/* Nested route for LotteriesLike */}
                     <Route path="LotteryLike">
                       <Route index element={<LotteriesLike />} />
                       <Route path=":lotteryId" element={<LotteryLike />} />
                     </Route>
-
-                    {/* Nested route for LotteriesFundraising */}
                     <Route path="LotteryFundraising">
                       <Route index element={<LotteriesFundraising />} />
                       <Route path=":lotteryId" element={<LotteryFundraising />} />
                     </Route>
-
-                    {/* Nested route for LotteriesClassic */}
                     <Route path="LotteryClassic">
                       <Route index element={<LotteriesClassic />} />
                       <Route path=":lotteryId" element={<LotteryClassic />} />
                     </Route>
                   </Route>
-
                   <Route path="/results">
                     <Route index element={<ResultsMenuPage />} />
                     <Route path=":resultId" element={<ResultsMenuPage />} />
                   </Route>
-
                   <Route path="/create">
                     <Route index element={<CreateMenuPage />} />
                     <Route path=":createId" element={<CreateMenuPage />} />
+                  </Route>
+
+                  {/* Add Routes for Owned Tickets */}
+                  <Route path="/ownedtickets">
+                    <Route index element={<OwnedTickets />} />
+                    <Route path="Fundraising/:lotteryId" element={<LotteryFundraising />} />
+                    <Route path="Classic/:lotteryId" element={<LotteryClassic />} />
+                    <Route path="Like/:lotteryId" element={<LotteryLike />} />
+                  </Route>
+
+                  {/* Existing Owned Lotteries Route */}
+                  <Route path="/ownedlotteries">
+                    <Route index element={<OwnedLotteries />} />
+                    <Route path="LotteryLike/:lotteryId" element={<LotteryLike />} />
+                    <Route path="LotteryFundraising/:lotteryId" element={<LotteryFundraising />} />
+                    <Route path="LotteryClassic/:lotteryId" element={<LotteryClassic />} />
                   </Route>
                 </Route>
               </Routes>
@@ -83,7 +89,7 @@ function App() {
           <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
       </UserDetailContext.Provider>
-    </MantineProvider >
+    </MantineProvider>
   );
 }
 

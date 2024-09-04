@@ -1,0 +1,12 @@
+.lottery-section {
+    margin-top: 20px;
+    border-top: 1px solid #ddd;
+    padding-top: 10px;
+  }
+  
+  .lottery-section h3 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: bold;
+  }
+  

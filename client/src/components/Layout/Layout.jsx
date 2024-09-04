@@ -13,16 +13,15 @@ const Layout = () => {
 
   const { isAuthenticated, user, getAccessTokenWithPopup } = useAuth0();
   const { setUserDetails } = useContext(UserDetailContext);
-  
+
   const { mutate } = useMutation({
     mutationKey: [user?.email],
     mutationFn: async ({ data, token }) => {
-      
+
       const receivedData = await createUser(data, token); // Call createUser and wait for response
-      
-      console.log("Received data from server:", receivedData.user);
-      
-            if (receivedData && receivedData.user) {
+
+
+      if (receivedData && receivedData.user) {
         // Merge new user data with existing user fields
         setUserDetails((prev) => {
           const updatedUser = {
@@ -43,40 +42,40 @@ const Layout = () => {
 
   useEffect(() => {
     const getTokenAndRegister = async () => {
-      try{
-      const res = await getAccessTokenWithPopup({
-        authorizationParams: {
-          audience: "http://localhost:8000",
-          scope: "openid profile email",
-        },
-      });
-      localStorage.setItem("access_token", res);
-      setUserDetails((prev) => ({ ...prev, token: res }));
-    
-      if (user) {
-        // Call mutation with proper data
-        mutate({
-          data: {
-            email: user.email,
-            firstName: user.given_name || "",
-            lastName: user.family_name || "",
-            picture: user.picture || "",
+      try {
+        const res = await getAccessTokenWithPopup({
+          authorizationParams: {
+            audience: "http://localhost:8000",
+            scope: "openid profile email",
           },
-          token: res,
         });
-      } else {
-        console.error("User data is undefined");
-      }
-    } catch (error) {
-      console.error("Error obtaining token:", error.message);
-    }
-  };
+        localStorage.setItem("access_token", res);
+        setUserDetails((prev) => ({ ...prev, token: res }));
 
-   // Correctly call the function inside useEffect
-   if (isAuthenticated ) {
-    getTokenAndRegister(); // Correct function call
-  }
-}, [isAuthenticated]); // Ensure user is part of the dependencies
+        if (user) {
+          // Call mutation with proper data
+          mutate({
+            data: {
+              email: user.email,
+              firstName: user.given_name || "",
+              lastName: user.family_name || "",
+              picture: user.picture || "",
+            },
+            token: res,
+          });
+        } else {
+          console.error("User data is undefined");
+        }
+      } catch (error) {
+        console.error("Error obtaining token:", error.message);
+      }
+    };
+
+    // Correctly call the function inside useEffect
+    if (isAuthenticated) {
+      getTokenAndRegister(); // Correct function call
+    }
+  }, [isAuthenticated]); // Ensure user is part of the dependencies
 
 
   return (

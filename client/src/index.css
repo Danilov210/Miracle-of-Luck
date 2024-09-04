@@ -3,6 +3,7 @@
   --secondary: rgba(255, 255, 255, 0.78);
   --black: #000000;
   --green: #0bc94a;
+  --red:#de1c1c;
   --blue-gradient: linear-gradient(97.05deg, #4066ff 3.76%, #2949c6 100%);
   --orange-gradient: linear-gradient(270deg, #f4bb86 0%, #db710e 100%);
   --blue: #4066ff;
@@ -43,6 +44,7 @@ a {
   align-items: center;
   flex-wrap: wrap;
 }
+
 .flexStart {
   display: flex;
   justify-content: flex-start;
@@ -61,12 +63,14 @@ a {
   align-items: center;
   flex-direction: column;
 }
+
 .flexColStart {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
 }
+
 .flexColEnd {
   display: flex;
   flex-direction: column;
@@ -80,10 +84,35 @@ a {
   font-size: 2rem;
 }
 
+.primary2Text {
+  color: #004d40;
+  font-weight: bold;
+  font-size: 2rem;
+}
+
+.primary3Text {
+  color: #008080;
+  font-weight: bold;
+  font-size: 2rem;
+}
+
+.placeNumber {
+  color: black;
+  font-weight: bold;
+  font-size: 2rem;
+}
+
+.IDNumber {
+  color: rgb(98, 173, 88);
+  font-weight: bold;
+  font-size: 2rem;
+}
+
 .secondaryText {
   color: rgb(140 139 139);
   font-size: 0.9rem;
 }
+
 .orangeText {
   color: orange;
   font-size: 1.5rem;
@@ -107,11 +136,14 @@ a {
 .button-blue {
   background-color: var(--blue);
 }
-
+.button-red {
+  background-color: var(--red);
+}
 /* Button with sharp corners (no border radius) */
 .button-green {
   background-color: var(--green);
 }
+
 /* media queries */
 @media (min-width: 1536px) {
   .innerWidth {
@@ -126,7 +158,8 @@ a {
   }
 }
 
-@media (min-width: 1280px), (min-width: 768px) {
+@media (min-width: 1280px),
+(min-width: 768px) {
   .paddings {
     padding: 2rem;
   }
@@ -136,6 +169,23 @@ a {
   .primaryText {
     font-size: 1.5rem;
   }
+
+  .primary2Text {
+    font-size: 1.5rem;
+  }
+
+  .placeNumber {
+    font-size: 1.5rem;
+  }
+
+  .IDNumber {
+    font-size: 1.5rem;
+  }
+
+  .primary3Text {
+    font-size: 1.5rem;
+  }
+
   .orangeText {
     font-size: 1.2rem;
   }

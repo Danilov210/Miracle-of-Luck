@@ -2,7 +2,7 @@ import asyncHandler from "express-async-handler";
 import { prisma } from "../config/prismaConfig.js";
 
 
- //++ Function to register a new user or return existing user details.
+//++ Function to register a new user or return existing user details.
 export const createUser = asyncHandler(async (req, res) => {
   // Extract user details from the request body, defaulting to an empty object if not provided
   const { email, firstName, lastName, picture } = req.body.data || {};
@@ -56,139 +56,159 @@ export const createUser = asyncHandler(async (req, res) => {
   }
 });
 
-
-//function to  book visit to residncy
-export const bookVisit = asyncHandler(async (req, res) => {
-  const { email, date } = req.body;
-  const { id } = req.params;
+//++ Function to handle Fundraising ticket purchase for fundraising
+export const buyTicketFundraising = asyncHandler(async (req, res) => {
+  const { ticketNumber, lotteryId, email, totalPrice } = req.body.data;
 
   try {
-    const alreadyBooked = await prisma.user.findUnique({
-      where: { email: email },
-      select: { bookedVisits: true },
-    });
-    if (alreadyBooked.bookedVisits.some((visit) => visit.id === id)) {
-      res
-        .status(400)
-        .json({ massage: "This residency is already booked by you" });
-    } else {
-      await prisma.user.update({
-        where: { email: email },
-        data: {
-          bookedVisits: { push: { id, date } },
-        },
-      });
-      res.send("You visit booked successfully");
-    }
-  } catch (err) {
-    throw new Error(err.massage);
-  }
-});
-
-//function that get all bookings of a user
-export const getAllBookings = asyncHandler(async (req, res) => {
-  const { email } = req.body;
-
-  try {
-    const bookings = await prisma.user.findUnique({
-      where: { email },
-      select: { bookedVisits: true },
-    });
-    res.status(200).send(bookings);
-  } catch (err) {
-    throw new Error(err.massage);
-  }
-});
-
-//function to cancel booking
-
-export const cancelBooking = asyncHandler(async (req, res) => {
-  const { email } = req.body;
-  const { id } = req.params;
-  try {
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: { bookedVisits: true },
-    });
-    const index = user.bookedVisits.findIndex((visit) => visit.id === id);
-    if (index === -1) {
-      res.status(404).json({ message: "Booking not found" });
-    } else {
-      user.bookedVisits.splice(index, 1);
-      await prisma.user.update({
-        where: { email },
-        data: {
-          bookedVisits: user.bookedVisits,
-        },
-      });
-      res.send("Booking cancelled successfully");
-    }
-  } catch (err) {
-    throw new Error(err.massage);
-  }
-});
-
-//function to add a resd in favourite list
-export const toFav = asyncHandler(async (req, res) => {
-  const { email } = req.body;
-  const { rid } = req.params;
-
-  try {
+    // Find the user by email
     const user = await prisma.user.findUnique({
       where: { email },
     });
-    if (user.favResidenceID.includes(rid)) {
-      const updateUser = await prisma.user.update({
-        where: { email },
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if the user's balance is sufficient
+    if (user.balance < totalPrice) {
+      return res.status(400).json({ message: "Insufficient balance" });
+    }
+
+    // Find the lottery by ID
+    const lottery = await prisma.lotteryFundraising.findUnique({
+      where: { id: lotteryId },
+    });
+
+    if (!lottery) {
+      return res.status(404).json({ message: "Lottery not found" });
+    }
+
+    // Create the tickets and associate them with the lottery and user
+    const tickets = [];
+    for (let i = 0; i < ticketNumber; i++) {
+      const ticket = await prisma.ticket.create({
         data: {
-          favResidenceID: {
-            set: user.favResidenceID.filter((id) => id !== rid),
+          lotteryType: "Fundraising",
+          ticketNumber: `${lotteryId}-${Date.now()}-${i}`, // Unique ticket number
+          purchaseDate: new Date(),
+          status: "Active",
+          user: {
+            connect: { id: user.id }, // Associate the ticket with the user
+          },
+          lotteryFundraising: {
+            connect: { id: lotteryId }, // Associate the ticket with the specific lottery
           },
         },
       });
-      res.send({
-        massage: "Residencies remuved from favorites",
-        user: updateUser,
-      });
-    } else {
-      const updateUser = await prisma.user.update({
-        where: { email },
-        data: {
-          favResidenceID: {
-            push: rid,
-          },
-        },
-      });
-      res.send({ massage: "Updated favorites", user: updateUser });
+
+      tickets.push(ticket);
     }
-  } catch (err) {
-    throw new Error(err.massage);
-  }
-});
 
-//function that show all favorite residensies
-export const getallFav = asyncHandler(async (req, res) => {
-  const { email } = req.body;
-  try {
-    const favResd = await prisma.user.findUnique({
+    // Deduct the total ticket price from the user's balance
+    await prisma.user.update({
       where: { email },
-      select: { favResidenceID: true },
+      data: {
+        balance: { decrement: totalPrice },
+      },
     });
-    res.status(200).send(favResd);
+
+    // Return success response
+    console.log("Ticket(s) purchased successfully.");
+    return res.status(201).json({
+      message: "Ticket(s) purchased successfully.",
+      tickets,
+    });
   } catch (err) {
-    throw new Error(err.massage);
+    // Log the error message for debugging
+    console.error("Error purchasing ticket:", err.message);
+
+    // Send a 500 Internal Server Error response with the error message
+    res.status(500).send({ message: "Error processing ticket purchase. Please try again." });
   }
 });
 
+//++ Function to handle Classic ticket purchase for fundraising
+export const buyTicketClassic = asyncHandler(async (req, res) => {
+  const { lotteryId, email, totalPrice, selectedNumbers } = req.body.data; // No need for ticketNumber since it's one ticket per purchase
+  console.log(req.body.data);
+  try {
+    // Find the user by email
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
 
-// Function to get a user and their owned lotteries
-export const getUserWithLotteries = asyncHandler(async (req, res) => {
-  const { email } = req.params; // Assuming email is provided as a route parameter
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if the user's balance is sufficient
+    if (user.balance < totalPrice) {
+      return res.status(400).json({ message: "Insufficient balance" });
+    }
+
+    // Find the classic lottery by ID
+    const lottery = await prisma.lotteryClassic.findUnique({
+      where: { id: lotteryId },
+    });
+
+    if (!lottery) {
+      return res.status(404).json({ message: "Lottery not found" });
+    }
+
+    // Create the ticket and associate it with the lottery and user
+    const ticket = await prisma.ticket.create({
+      data: {
+        lotteryType: "Classic",
+        ticketNumber: `${lotteryId}-${Date.now()}`, // Unique ticket number
+        purchaseDate: new Date(),
+        status: "Active",
+        numbers:selectedNumbers, // Store the user-chosen numbers in the ticket
+        user: {
+          connect: { id: user.id }, // Associate the ticket with the user
+        },
+        lotteryClassic: {
+          connect: { id: lotteryId }, // Associate the ticket with the specific classic lottery
+        },
+      },
+    });
+
+    // Deduct the total ticket price from the user's balance
+    await prisma.user.update({
+      where: { email },
+      data: {
+        balance: { decrement: totalPrice },
+      },
+    });
+
+    // Return success response
+    console.log("Ticket purchased successfully.");
+    return res.status(201).json({
+      message: "Ticket purchased successfully.",
+      ticket,
+    });
+  } catch (err) {
+    // Log the error message for debugging
+    console.error("Error purchasing ticket:", err.message);
+
+    // Send a 500 Internal Server Error response with the error message
+    res.status(500).send({ message: "Error processing ticket purchase. Please try again." });
+  }
+});
+
+//++ Function to get all lotteries owned by a user
+export const getUserOwnedLottories = asyncHandler(async (req, res) => {
+  const { email } = req.body.data; // Correctly extract the email from req.body.data
+
 
   try {
     const user = await prisma.user.findUnique({
       where: { email },
-
+      include: {
+        ownedLotteriesLike: true,       // Include all "Like" lotteries owned by the user
+        ownedLotteriesFundraising: true, // Include all "Fundraising" lotteries owned by the user
+        ownedLotteriesClassic: true,     // Include all "Classic" lotteries owned by the user
+      },
     });
 
     // Check if user exists
@@ -204,7 +224,97 @@ export const getUserWithLotteries = asyncHandler(async (req, res) => {
   }
 });
 
+//++ Function to get all tickets owned by a user
+export const getUserOwnedTickets = asyncHandler(async (req, res) => {
+  const { email } = req.body.data; // Correctly extract the email from req.body.data
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email },
+      include: {
+        tickets: {
+          include: {
+            lotteryClassic: true,
+            lotteryLike: true,
+            lotteryFundraising: true,
+          },
+        }, // Include all ticket relations
+      },
+    });
 
+    // Check if user exists
+    if (!user) {
+      return res.status(404).send({ message: "User not found." });
+    }
+    console.log("Send User Ticket", email)
+    // Send the user tickets data
+    res.send(user.tickets);
+  } catch (err) {
+    console.error("Error fetching user tickets:", err.message);
+    res.status(500).send({ message: "Failed to fetch user tickets. Please try again." });
+  }
+});
 
+// Function to cancel a ticket by a user
+export const cancelTicket = asyncHandler(async (req, res) => {
+  try {
 
+    const { ticketId } = req.body.data;
 
+    console.log("Received ticketId:", ticketId);
+
+    // Validate that ticketId is provided
+    if (!ticketId) {
+      return res.status(400).json({ error: "Ticket ID is required" });
+    }
+
+    // Find the ticket by ID
+    const ticket = await prisma.ticket.findUnique({
+      where: { id: ticketId },
+    });
+
+    if (!ticket) {
+      return res.status(404).json({ error: "Ticket not found" });
+    }
+
+    // Check if the ticket is already canceled
+    if (ticket.status === "Canceled") {
+      return res.status(400).json({ error: "Ticket is already canceled" });
+    }
+
+    // Find the associated lottery to get the ticket price
+    const lottery =
+      ticket.lotteryType === "Like"
+        ? await prisma.lotteryLike.findUnique({ where: { id: ticket.lotteryId } })
+        : ticket.lotteryType === "Fundraising"
+          ? await prisma.lotteryFundraising.findUnique({ where: { id: ticket.lotteryId } })
+          : await prisma.lotteryClassic.findUnique({ where: { id: ticket.lotteryId } });
+
+    if (!lottery) {
+      return res.status(404).json({ error: "Associated lottery not found" });
+    }
+
+    // Calculate the refund amount (assuming the price is in the lottery model)
+    const refundAmount = lottery.price;
+
+    // Update the user's balance and delete the ticket in a single transaction
+    await prisma.$transaction([
+      prisma.ticket.delete({
+        where: { id: ticketId },
+      }),
+      prisma.user.update({
+        where: { id: ticket.userId },
+        data: {
+          balance: { increment: refundAmount },
+        },
+      }),
+    ]);
+    console.log("Ticket canceled and deleted successfully:", ticketId);
+
+    return res.status(201).json({
+      message: "Ticket canceled and deleted successfully"
+    });
+  } catch (error) {
+    console.error("Error canceling ticket:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});

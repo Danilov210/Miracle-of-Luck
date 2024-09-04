@@ -14,18 +14,16 @@ const ProfileMenu = ({ user, logout }) => {
   const handleClose = () => {
     setAnchorEl(null);
   };
-  user.name="Dibil";
-  user.balance=0;
-  console.log(user);
+
   return (
     <>
       <IconButton onClick={handleClick} className="icon-button" style={{ display: 'flex', alignItems: 'center' }}>
         <Avatar
-          src={user?.picture || "/path/to/default/image.jpg"} // Fallback image
+          src={user?.picture || "/path/to/default/image.jpg"}
           className="avatar-small"
-          alt={user?.name || "User Avatar"} // Alternative text
-          sx={{ width: 40, height: 40 }} // Ensure consistent sizing
-          onError={(e) => { e.target.src = "/path/to/default/image.jpg"; }} // Fallback if image fails to load
+          alt={user?.name || "User Avatar"}
+          sx={{ width: 40, height: 40 }}
+          onError={(e) => { e.target.src = "/path/to/default/image.jpg"; }}
         />
         <Typography variant="body1" className="user-name" style={{ marginLeft: '8px' }}>
           {user?.name}
@@ -44,11 +42,12 @@ const ProfileMenu = ({ user, logout }) => {
           horizontal: 'right',
         }}
       >
-        <MenuItem onClick={() => { handleClose(); navigate("/favourites"); }}>
-          Favourites
+        {/* Updated this MenuItem to navigate to /ownedlotteries */}
+        <MenuItem onClick={() => { handleClose(); navigate("/ownedlotteries"); }}>
+          Owned Lotteries
         </MenuItem>
-        <MenuItem onClick={() => { handleClose(); navigate("/bookings"); }}>
-          Bookings
+        <MenuItem onClick={() => { handleClose(); navigate("/ownedtickets"); }}>
+        My Tickets
         </MenuItem>
         <MenuItem
           onClick={() => {

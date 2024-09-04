@@ -19,7 +19,7 @@ const CreateClassicModel = ({ open, setOpen }) => {
         drawnNumbersCount: 0,
         availableNumberRange: 0,
         price: 0,
-        prizes: [{ place: 1, description: "" }],
+        prizes: [{ place: 1, amount: 0 }],
         userEmail: user?.email || "",
     };
 
@@ -45,7 +45,7 @@ const CreateClassicModel = ({ open, setOpen }) => {
 
     const addPrize = () => setLotteryDetails((prev) => ({
         ...prev,
-        prizes: [...prev.prizes, { place: prev.prizes.length + 1, description: "" }]
+        prizes: [...prev.prizes, { place: prev.prizes.length + 1, amount: 0 }] // Add a new prize with place and amount
     }));
 
     const deleteLastPrize = () => setLotteryDetails((prev) => ({
@@ -165,16 +165,19 @@ const CreateClassicModel = ({ open, setOpen }) => {
                                     <Typography sx={{ minWidth: "200px", whiteSpace: "nowrap" }}>
                                         Place {index + 1} ({lotteryDetails.drawnNumbersCount - index} {lotteryDetails.drawnNumbersCount - index === 1 ? "number" : "numbers"} from {lotteryDetails.drawnNumbersCount})
                                     </Typography>
-                                    {renderTextField("Prize (greater than 1)", prize.amount, (e) => handlePrizeChange(index, "amount", Math.max(1, parseFloat(e.target.value) || 0)), "number")}
+                                    {renderTextField("Amount (greater than 1)", prize.amount, (e) => handlePrizeChange(index, "amount", Math.max(1, parseFloat(e.target.value) || 0)), "number")}
                                 </Box>
                             ))}
                             <Box sx={{ display: "flex", justifyContent: "center", mt: 2, gap: 2 }}>
                                 <Button onClick={addPrize} variant="outlined" disabled={lotteryDetails.prizes.length >= lotteryDetails.drawnNumbersCount}>+ Add Another Prize</Button>
                                 <Button onClick={deleteLastPrize} variant="outlined" color="error" disabled={lotteryDetails.prizes.length === 1}>- Delete Last Prize</Button>
                             </Box>
-                            <Box className="flexColCenter NavBut" sx={{ mt: 2 }}>
-                                <button className="button button-green" onClick={prevStep}>Back</button>
-                                {lotteryDetails.prizes.some((prize) => prize.amount > 1) && <button className="button button-blue" onClick={handleFinish}>Finish</button>}
+                            <Box className="flexColCenter NavBut" >
+                                <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2, mt: 2 }}>
+
+                                    <button className="button button-green" onClick={prevStep}>Back</button>
+                                    {lotteryDetails.prizes.every((prize) => prize.amount > 0) && <button className="button button-blue" onClick={handleFinish}>Finish</button>}
+                                </Box>
                             </Box>
                         </div>
                     )}

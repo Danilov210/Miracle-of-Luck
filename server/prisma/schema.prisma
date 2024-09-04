@@ -44,9 +44,7 @@ model User {
     balance                     Float               @default(0)
     accountStatus               AccountStatus       @default(Active)
     DataOfBirth                 DateTime?
-    LotteryTicketPurchase       Json[]  
-    LotteryFundraising          Json[]
-    LotteryClassic              Json[]
+    tickets                     Ticket[]            @relation("UserTickets")
     ownedLotteriesLike          LotteryLike[]       @relation("Owner") 
     ownedLotteriesFundraising   LotteryFundraising[]    @relation("Owner") 
     ownedLotteriesClassic       LotteryClassic[]    @relation("Owner") 
@@ -115,18 +113,20 @@ model LotteryClassic {
 }
 
 model Ticket {
-  id           String        @id @default(auto()) @map("_id") @db.ObjectId
-  lotteryType  LotteryType   // Enum to specify the type of lottery (Like, Classic, Fundraising)
-  lotteryId    String        @db.ObjectId // Foreign key to either LotteryLike or LotteryFundraising
-  ticketNumber String        @unique 
-  purchaseDate DateTime      @default(now()) 
-  status       TicketStatus  @default(Active) 
+  id                  String        @id @default(auto()) @map("_id") @db.ObjectId
+  lotteryType         LotteryType   // Enum to specify the type of lottery (Like, Classic, Fundraising)
+  lotteryId           String        @db.ObjectId // Foreign key to either LotteryLike or LotteryFundraising
+  ticketNumber        String        @unique 
+  purchaseDate        DateTime      @default(now()) 
+  status              TicketStatus  @default(Active) 
+  numbers             Json?  
 
   lotteryClassic      LotteryClassic?     @relation("UserTicket", fields: [lotteryId], references: [id])
   lotteryLike         LotteryLike?        @relation("UserTicket", fields: [lotteryId], references: [id])
   lotteryFundraising  LotteryFundraising? @relation("UserTicket", fields: [lotteryId], references: [id])
 
-    @@unique(fields: [id,lotteryId])
+  user                User               @relation("UserTickets", fields: [userId], references: [id])
+  userId              String             @db.ObjectId
 }
 
 model Transaction {

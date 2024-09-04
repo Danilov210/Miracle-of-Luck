@@ -1,9 +1,9 @@
 import React, { useRef } from "react";
-import CreateLottery from "../components/CreateLottery/CreateLottery";
+import CreateMenuPage from "../pages/CreateMenuPage/CreateMenuPage";
 import Contact from "../components/Contact/Contact";
 import GetStarted from "../components/GetStarted/GetStarted";
 import Hero from "../components/Hero/Hero";
-import LotteriesMenu from "../pages/LotteriesMenu/LotteriesMenu";
+import LotteriesMenuPage from "../pages/LotteriesMenuPage/LotteriesMenuPage";
 import Results from "../components/Results/Results";
 
 const Website = () => {
@@ -15,9 +15,9 @@ const Website = () => {
         <div className="white-gradient" />
         <Hero />
       </div>
-      <LotteriesMenu />
+      <LotteriesMenuPage />
       <Results />
-      <CreateLottery />
+      <CreateMenuPage />
       <Contact />
       <GetStarted />
     </div>

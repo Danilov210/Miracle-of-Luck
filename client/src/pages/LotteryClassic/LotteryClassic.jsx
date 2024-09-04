@@ -1,131 +1,113 @@
-import React, { useContext, useState } from "react";
-import { useMutation, useQuery } from "react-query";
-import { useLocation } from "react-router-dom";
-import { getLotteryClassic } from "../../utils/api";
-import { PuffLoader } from "react-spinners";
+import React, { useState } from "react";
+import { useQuery } from "react-query";
+import { Snackbar, Alert } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { CancelUserTicket, getLotteryClassic } from "../../utils/api";
 import { AiFillHeart } from "react-icons/ai";
+import { PuffLoader } from "react-spinners";
 import "./LotteryClassic.css";
 import useAuthCheck from "../../hooks/useAuthCheck";
 import { useAuth0 } from "@auth0/auth0-react";
-import UserDetailContext from "../../context/UserDetailContext";
-import LotteryticketPurchase from "../../components/LotteryTicketPurchase/LotteryTicketPurchase";
-
-
-
+import { useLocation } from "react-router-dom"; // Import useLocation to access the state
+import LotteryClassicTicketPurchase from "../../components/LotteryClassicTicketPurchase/LotteryClassicTicketPurchase"; // Ensure correct import path and component name
 
 const LotteryClassic = () => {
+    const location = useLocation(); // Get the current location
+    const { state } = location; // Extract state from location
+    const ticketId = state?.ticketId; // Get ticketId if available from state
+    const ticketNumbers = state?.ticketNumbers; // Get ticket numbers if available from state
 
-    const { pathname } = useLocation();
-    const id = pathname.split("/").slice(-1)[0];
-    const { data, isLoading, isError } = useQuery(["lotteryclassic", id], () =>
-        getLotteryClassic(id)
-    );
-    const [modalOpened, setModalOpened] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+    const handleCloseSnackbar = () => setSnackbarOpen(false);
+    const navigate = useNavigate();
+
+    const id = useLocation().pathname.split("/").pop();
+    const { data, isLoading, isError } = useQuery(["lotteryclassic", id], () => getLotteryClassic(id));
+    const [ticketmodalOpened, setTicketModalOpened] = useState(false);
     const { validateLogin } = useAuthCheck();
     const { user } = useAuth0();
 
-    // const {
-    //     userDetails: { token, ticketPurchases },
-    //     setUserDetails,
-    // } = useContext(UserDetailContext);
+    if (isLoading) return <div className="wrapper flexCenter paddings"><PuffLoader /></div>;
+    if (isError) return <div className="wrapper flexCenter paddings">Error while fetching the lottery classic details</div>;
 
-    // const { mutate: cancelBooking, isLoading: cancelling } = useMutation({
-    //     mutationFn: () => removeBooking(id, user?.email, token),
-    //     onSuccess: () => {
-    //         setUserDetails((prev) => ({
-    //             ...prev,
-    //             ticketPurchases: prev.ticketPurchases.filter((booking) => booking?.id !== id),
-    //         }));
+    const { image, title, description, hosted, endDate, availableNumberRange, drawnNumbersCount, price, prizes, paticipationdescription } = data || {};
 
-    //         toast.success("Booking cancelled", { position: "bottom-right" });
-    //     },
-    // });
+    const showMessage = (message, severity) => {
+        setSnackbarMessage(message);
+        setSnackbarSeverity(severity);
+        setSnackbarOpen(true);
+    };
 
-    if (isLoading) {
-        return (
-            <div className="wrapper">
-                <div className="flexCenter paddings">
-                    <PuffLoader />
-                </div>
-            </div>
-        );
-    }
+    const handleTicketCancel = async () => {
+        try {
+            const response = await CancelUserTicket(ticketId);
 
-    if (isError) {
-        return (
-            <div className="wrapper">
-                <div className="flexCenter paddings">
-                    <span>Error while fetching the lottery Like details</span>
-                </div>
-            </div>
-        );
-    }
+            if (response?.data?.message) {
+                showMessage(response.data.message, "success");
+                navigate("/ownedtickets");
+            } else {
+                throw new Error("Unexpected response format from the server.");
+            }
+        } catch (error) {
+            showMessage(` ${error.response?.data?.message || error.message}`, "error");
+            console.error("Error creating lotteryLike:", error);
+        }
+    };
 
     return (
         <div className="wrapper">
             <div className="flexColStart paddings innerWidth lottery-container">
-                {/* like button */}
-                <div className="like">
-                    <AiFillHeart size={30} color="grey" />
-                </div>
-                {/* image */}
-                <img src={data?.image} alt="Lottery Image" />
-                <div className="flexCentre lottery-details">
+                {image && <img src={image} alt="Lottery Image" className="lottery-image" />}
+                <div className="flexColStart lottery-details">
                     <div className="flexColStart head">
-                        <span className="primaryText">{data?.title}</span>
-                        <span className="primaryText">Description!!!!!!!!!!!!</span>
-                        <span className="primaryText">HostName!!!!!!!!!!!!</span>
-                        <span className="primaryText">DATA+TIME!!!!!!!!!!!!</span>
-                        <span className="primaryText">Conditions!!!!!!!!!!!!</span>
-                        <span className="primaryText">Prises!!!!!!!!!!!!</span>
-                        <span className="primaryText">Link!!!!!!!!!!!!</span>
-                        {/* <span className="orangeText" style={{ fontSize: "1.5rem" }}>
-              {data?.price}
-            </span> */}
-
-                        {/* purchesing button */}
-                        {/* <button className="button button-blue">Purches</button> */}
-                        {/* booking button */}
-                        {/* {ticketPurchases?.map((booking) => booking.id).includes(id) ? (
+                        {/* Conditionally render the ticket ID if it exists */}
+                        {ticketId && (
+                            <span className="primaryText">Ticket ID: <span className="IDNumber">{ticketId}</span></span>
+                        )}
+                        {/* Conditionally render the ticket numbers if they exist */}
+                        {ticketNumbers && (
+                            <span className="primaryText">Ticket Numbers: <span className="IDNumber">{ticketNumbers.join(", ")}</span></span>
+                        )}
+                        {title && <span className="primaryText">Title: <span className="primary2Text">{title}</span></span>}
+                        {description && <span className="primaryText">Description: <span className="primary2Text">{description}</span></span>}
+                        {hosted && <span className="primaryText">Hosted By: <span className="primary2Text">{hosted}</span></span>}
+                        {endDate && <span className="primaryText">Lottery Draw Time: <span className="primary2Text">{new Date(endDate).toLocaleString()}</span></span>}
+                        {availableNumberRange && <span className="primaryText">Number Range: <span className="primary2Text">{availableNumberRange}</span></span>}
+                        {drawnNumbersCount && <span className="primaryText">Numbers to Draw: <span className="primary2Text">{drawnNumbersCount}</span></span>}
+                        {price && <span className="primaryText">Price For One Ticket: <span className="primary2Text">{price} USD</span></span>}
+                        {paticipationdescription && <span className="primaryText">Participation: <span className="primary2Text">{paticipationdescription}</span></span>}
+                        {prizes?.length > 0 && (
                             <>
-                                <Button
-                                    variant="outline"
-                                    w={"100%"}
-                                    color="red"
-                                    onClick={() => cancelBooking()}
-                                    disabled={cancelling}
-                                >
-                                    <span>Cancel booking</span>
-                                </Button>
-                                <span>
-                                    Your visit already booked for date{" "}
-                                    {ticketPurchases?.filter((ticketPurchase) => ticketPurchase?.id === id)[0].date}
-                                </span>
+                                <span className="primaryText">Prizes:</span>
+                                {prizes.map(({ place, amount }, idx) => (
+                                    <div key={idx} className="primary2Text">
+                                        <span className="placeNumber">Place {place} ({drawnNumbersCount - idx} {drawnNumbersCount - idx === 1 ? "number" : "numbers"} from {drawnNumbersCount})</span>: {amount} USD
+                                    </div>
+                                ))}
                             </>
-                        ) : (
-                            <button
-                                className="button button-green"
-                                onClick={() => {
-                                    validateLogin() && setModalOpened(true);
-                                }}
-                            >
-                                Book your visit
-                            </button>
-                        )} */}
-                        <button className="button button-green"
+                        )}
+                        <button
+                            className={`button ${ticketId ? 'button-red' : 'button-green'}`} // Dynamically set button color
                             onClick={() => {
-                                validateLogin() && setModalOpened(true);
+                                if (ticketId) {
+                                    handleTicketCancel();
+                                } else {
+                                    if (validateLogin()) {
+                                        setTicketModalOpened(true);
+                                    }
+                                }
                             }}
                         >
-                            Book your visit
+                            {ticketId ? "Cancel Ticket" : "Buy Ticket"}
                         </button>
-                        
-                        <LotteryticketPurchase
-                            opened={modalOpened}
-                            setOpened={setModalOpened}
-                            lotteryId={id}
-                            email={user?.email}
-                        />
+                        <LotteryClassicTicketPurchase opened={ticketmodalOpened} setOpened={setTicketModalOpened} lotteryId={id} email={user?.email} ticketPrice={price} availableNumberRange={availableNumberRange} drawnNumbersCount={drawnNumbersCount} />
+                        <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+                            <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+                                {snackbarMessage}
+                            </Alert>
+                        </Snackbar>
                     </div>
                 </div>
             </div>
