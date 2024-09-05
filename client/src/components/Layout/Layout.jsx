@@ -17,25 +17,26 @@ const Layout = () => {
   const { mutate } = useMutation({
     mutationKey: [user?.email],
     mutationFn: async ({ data, token }) => {
-
       const receivedData = await createUser(data, token); // Call createUser and wait for response
-
+      console.log("Received user data:", receivedData);
 
       if (receivedData && receivedData.user) {
-        // Merge new user data with existing user fields
-        setUserDetails((prev) => {
-          const updatedUser = {
-            ...prev.user, // Keep existing user fields
-            ...receivedData.user, // Override/merge with new user details from the server
-          };
+        // Format the date to display only day, month, and year
+        const formattedDateOfBirth = receivedData.user.DataOfBirth
+          ? new Date(receivedData.user.DataOfBirth).toLocaleDateString("en-GB")
+          : null;
 
-          const updatedDetails = {
-            ...prev, // Keep other existing details intact
-            ...updatedUser, // Spread the updated user details
-          };
-
-          return updatedDetails;
-        });
+        // Update user details context with all relevant fields
+        setUserDetails((prev) => ({
+          ...prev, // Keep other existing details intact
+          email: receivedData.user.email,
+          firstName: receivedData.user.firstName,
+          lastName: receivedData.user.lastName,
+          fullName: receivedData.user.fullName,
+          picture: receivedData.user.picture,
+          DataOfBirth: formattedDateOfBirth, // Use the formatted date
+          balance: receivedData.user.balance,
+        }));
       }
     },
   });
@@ -59,7 +60,10 @@ const Layout = () => {
               email: user.email,
               firstName: user.given_name || "",
               lastName: user.family_name || "",
+              fullName: `${user.given_name || ""} ${user.family_name || ""}`.trim(), // Construct full name
               picture: user.picture || "",
+              DataOfBirth: user.birthdate || null,
+              balance: 0, // Initialize balance to 0 for new users
             },
             token: res,
           });
@@ -71,12 +75,10 @@ const Layout = () => {
       }
     };
 
-    // Correctly call the function inside useEffect
     if (isAuthenticated) {
-      getTokenAndRegister(); // Correct function call
+      getTokenAndRegister(); // Fetch the token and register the user
     }
   }, [isAuthenticated]); // Ensure user is part of the dependencies
-
 
   return (
     <>

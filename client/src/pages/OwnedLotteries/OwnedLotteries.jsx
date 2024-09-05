@@ -11,7 +11,7 @@ import "./OwnedLotteries.css";
 
 const OwnedLotteries = () => {
   const { user } = useAuth0();
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const [ownedLotteries, setOwnedLotteries] = useState([]);
   const [filter, setFilter] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -53,7 +53,8 @@ const OwnedLotteries = () => {
 
   const { ownedLotteriesLike = [], ownedLotteriesFundraising = [], ownedLotteriesClassic = [] } = ownedLotteries;
 
-
+  // Check if there are no lotteries
+  const noLotteries = ownedLotteriesLike.length === 0 && ownedLotteriesFundraising.length === 0 && ownedLotteriesClassic.length === 0;
 
   // Function to filter lotteries based on search term
   const filterLotteries = (lotteries) =>
@@ -65,13 +66,25 @@ const OwnedLotteries = () => {
 
   // Function to handle navigation
   const handleLotteryClick = (lottery, type) => {
-    navigate(`/ownedlotteries/${type}/${lottery.id}`, { state: { from: "/ownedlotteries" } });
+    navigate(`/ownedlotteries/${type}/${lottery.id}`, {
+      state: {
+        from: "/ownedlotteries",
+        cancelLotteryOption: true // Add the cancelLotteryOption state
+      }
+    });
   };
 
   return (
     <div className="wrapper">
       <div className="flexColCenter paddings innerWidth lottery-container">
         <SearchBar filter={filter} setFilter={setFilter} />
+
+        {/* Show message if user has no lotteries */}
+        {noLotteries && (
+          <div className="no-lotteries-message">
+            <h3>You do not own any lotteries yet.</h3>
+          </div>
+        )}
 
         {/* Fundraising Lotteries */}
         {ownedLotteriesFundraising.length > 0 && (

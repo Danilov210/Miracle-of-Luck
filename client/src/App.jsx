@@ -20,17 +20,20 @@ import CreateMenuPage from "./pages/CreateMenuPage/CreateMenuPage";
 import OwnedLotteries from "./pages/OwnedLotteries/OwnedLotteries";
 import OwnedTickets from "./pages/OwnedTickets/OwnedTickets";
 import { MantineProvider } from "@mantine/core";
+import UserDetails from "./pages/UserDetails/UserDetails";
 
 function App() {
   const queryClient = new QueryClient();
 
   const [userDetails, setUserDetails] = useState({
-    favorite: [],
-    LotteryTicketPurchase: [],
+    firstName: "",
+    lastName: "",
+    fullName: "",
+    picture: "",
     token: null,
     DataOfBirth: null,
-    accountStatus: null,
     balance: null,
+    email: ""
   });
 
   return (
@@ -66,7 +69,7 @@ function App() {
                     <Route path=":createId" element={<CreateMenuPage />} />
                   </Route>
 
-                  {/* Add Routes for Owned Tickets */}
+                  {/*  Owned Tickets Route*/}
                   <Route path="/ownedtickets">
                     <Route index element={<OwnedTickets />} />
                     <Route path="Fundraising/:lotteryId" element={<LotteryFundraising />} />
@@ -74,12 +77,16 @@ function App() {
                     <Route path="Like/:lotteryId" element={<LotteryLike />} />
                   </Route>
 
-                  {/* Existing Owned Lotteries Route */}
+                  {/*  Owned Lotteries Route */}
                   <Route path="/ownedlotteries">
                     <Route index element={<OwnedLotteries />} />
                     <Route path="LotteryLike/:lotteryId" element={<LotteryLike />} />
                     <Route path="LotteryFundraising/:lotteryId" element={<LotteryFundraising />} />
                     <Route path="LotteryClassic/:lotteryId" element={<LotteryClassic />} />
+                  </Route>
+                  {/* User Details Route */}
+                  <Route path="/userdetails">
+                    <Route index element={<UserDetails />} />
                   </Route>
                 </Route>
               </Routes>

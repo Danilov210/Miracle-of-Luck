@@ -19,6 +19,7 @@ export const createUser = async (data, token) => {
 
     // Extract and store the data from the response
     const receivedData = response.data; // Store the data from the response
+    console.log("responsCreate",receivedData);
     return receivedData; // Return the data for further use
   } catch (error) {
     if (error.response) {
@@ -258,5 +259,55 @@ export const CancelUserTicket = async (ticketId) => {
   } catch (error) {
     console.error("Error fetching user's lotteries:", error.message);
     throw new Error("Failed to fetch user lotteries.");
+  }
+};
+
+
+
+export const CancelLottery = async (lotteryId, lotteryType) => {
+  try {
+    const response = await api.post('/user/CancelLottery', {
+      data: { lotteryId, lotteryType }, // Send both lotteryId and lotteryType
+    });
+    return response;
+  } catch (error) {
+    console.error("Error canceling the lottery:", error.message);
+    throw new Error("Failed to cancel the lottery.");
+  }
+};
+
+
+export const updateUserDetails = async (updatedDetails, token) => {
+  try {
+    // Only include fields that are allowed to be updated
+    const allowedFields = ['email','firstName', 'lastName', 'fullName', 'picture', 'DataOfBirth'];
+    const sanitizedDetails = Object.keys(updatedDetails)
+      .filter(key => allowedFields.includes(key) && updatedDetails[key] !== undefined && updatedDetails[key] !== null)
+      .reduce((obj, key) => {
+        obj[key] = updatedDetails[key];
+        return obj;
+      }, {});
+
+    console.log('Sanitized details to update:', sanitizedDetails);
+
+    // Send the sanitized user details to the server
+    const response = await api.put(
+      '/user/updateUser',
+      {
+        data: sanitizedDetails, // Send only sanitized user details in the request body
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+        },
+      }
+    );
+
+    const receivedData = response.data; // Store the data from the response
+    console.log('Response:', receivedData);
+    return receivedData;
+  } catch (error) {
+    console.error('Error updating user details:', error.message);
+    throw new Error('Failed to update user details.');
   }
 };

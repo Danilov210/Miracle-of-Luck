@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
-import { Snackbar, Alert, Container, Dialog, DialogTitle, DialogContent, IconButton, Typography, Stepper, Step, StepLabel, TextField, Select, Box, MenuItem, Button } from "@mui/material";
+import { Container, Dialog, DialogTitle, DialogContent, IconButton, Typography, Stepper, Step, StepLabel, TextField, Select, Box, MenuItem, Button } from "@mui/material";
 import { HelpOutline as OtherIcon, Close as CloseIcon, Phone as PhoneIcon, Email as EmailIcon, Star as StarIcon, ShoppingCart as ShoppingCartIcon, CardGiftcard as GiftCardIcon, Smartphone as SmartphoneIcon, Laptop as LaptopIcon, Headphones as HeadphonesIcon, Watch as WatchIcon, Subscriptions as SubscriptionsIcon, SportsEsports as GamingConsoleIcon, Kitchen as KitchenIcon, Speaker as SpeakerIcon, Face as BeautyIcon, Flight as TravelIcon, Work as FashionIcon, Home as HomeAutomationIcon, Hiking as OutdoorGearIcon, MenuBook as BooksIcon, Pets as PetSuppliesIcon, Camera as CameraIcon, EmojiFoodBeverage as SnackBoxIcon, DirectionsCar as CarIcon, FitnessCenter as FitnessIcon, LocalDining as RestaurantIcon, LocalMall as ShoppingMallIcon, LocalMovies as MovieIcon, LocalBar as BarIcon, Spa as SpaIcon, AirplanemodeActive as AirplaneIcon, DirectionsBoat as BoatIcon, DirectionsBike as BikeIcon, DirectionsBus as BusIcon, Bed as BedIcon, LocalHospital as HospitalIcon, Computer as DesktopIcon, Tablet as TabletIcon, Toys as ToysIcon, MusicNote as MusicNoteIcon, ArtTrack as ArtIcon, FlashOn as FlashIcon, Healing as HealingIcon, Nature as NatureIcon, Palette as PaletteIcon, BeachAccess as BeachIcon, BugReport as BugIcon, Code as CodeIcon, FlashOn as PowerIcon, FitnessCenter as WorkoutIcon } from "@mui/icons-material";
+import { toast } from "react-toastify"; // Import toast from react-toastify
 import UploadImage from "../UploadImage/UploadImage";
 import { createLotteryFundraising } from "../../utils/api";
 import "./CreateFundraisingModel.css";
@@ -78,9 +79,6 @@ const CreateFundraisingModel = ({ open, setOpen }) => {
 
     const [activeStep, setActiveStep] = useState(0);
     const [lotteryDetails, setLotteryDetails] = useState(initialLotteryDetails);
-    const [snackbarOpen, setSnackbarOpen] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState("");
-    const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
     const nextStep = () => setActiveStep((current) => Math.min(current + 1, 3));
     const prevStep = () => setActiveStep((current) => Math.max(current - 1, 0));
@@ -112,24 +110,22 @@ const CreateFundraisingModel = ({ open, setOpen }) => {
 
             const response = await createLotteryFundraising(payload, token);
             if (response?.data?.message) {
-                showMessage(response.data.message, "success");
+                toast.success(response.data.message, {
+                    position: "bottom-right",
+                    autoClose: 3000, // Auto close after 3 seconds
+                });
+
                 setTimeout(() => window.location.reload(), 3000);
             } else {
                 throw new Error("Unexpected response format from the server.");
             }
         } catch (error) {
-            showMessage(`Error creating lottery: ${error.response?.data?.message || error.message}`, "error");
+            toast.error(`Error creating lottery: ${error.response?.data?.message || error.message}`, {
+                position: "bottom-right",
+            });
             console.error("Error creating lotteryLike:", error);
         }
     };
-
-    const showMessage = (message, severity) => {
-        setSnackbarMessage(message);
-        setSnackbarSeverity(severity);
-        setSnackbarOpen(true);
-    };
-
-    const handleCloseSnackbar = () => setSnackbarOpen(false);
 
     const canProceedToNextStep = lotteryDetails.paticipationdescription.trim() && lotteryDetails.price > 0;
 
@@ -206,11 +202,9 @@ const CreateFundraisingModel = ({ open, setOpen }) => {
                         </div>
                     )}
 
-{activeStep === 3 && (
+                    {activeStep === 3 && (
                         <div>
-                            <Typography variant="h4" sx={{ mt: 2, textAlign: "center", fontWeight: "bold" }}>
-                                Add Prizes for the Lottery
-                            </Typography>
+                            <Typography variant="h4" sx={{ mt: 2, textAlign: "center", fontWeight: "bold" }}>Add Prizes for the Lottery</Typography>
                             {lotteryDetails.prizes.map((prize, index) => (
                                 <Box
                                     key={index}
@@ -219,7 +213,7 @@ const CreateFundraisingModel = ({ open, setOpen }) => {
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: 2,
-                                        flexDirection: { xs: 'column', sm: 'row' } // Stack vertically on small screens, horizontally on medium and larger screens
+                                        flexDirection: { xs: 'column', sm: 'row' }
                                     }}
                                 >
                                     <Typography sx={{ minWidth: "45px", whiteSpace: "nowrap" }}>Place {index + 1}</Typography>
@@ -229,7 +223,7 @@ const CreateFundraisingModel = ({ open, setOpen }) => {
                                         onChange={(e) => handlePrizeChange(index, "icon", e.target.value)}
                                         displayEmpty
                                         sx={{
-                                            minWidth: { xs: '100%', sm: '220px' }, // Full width on small screens, 200px on medium and larger
+                                            minWidth: { xs: '100%', sm: '220px' },
                                             maxWidth: '100%',
                                             display: 'flex',
                                             alignItems: 'center',
@@ -256,7 +250,6 @@ const CreateFundraisingModel = ({ open, setOpen }) => {
                             <Box className="flexColCenter NavBut">
                                 <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2, mt: 2 }}>
                                     <button className="button button-green" onClick={prevStep}>Back</button>
-                                    {/* Check if all prizes are filled */}
                                     {lotteryDetails.prizes.every((prize) => prize.description && prize.icon) && (
                                         <button className="button button-blue" onClick={handleFinish}>Finish</button>
                                     )}
@@ -264,10 +257,6 @@ const CreateFundraisingModel = ({ open, setOpen }) => {
                             </Box>
                         </div>
                     )}
-
-                    <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-                        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>{snackbarMessage}</Alert>
-                    </Snackbar>
                 </Container>
             </DialogContent>
         </Dialog>

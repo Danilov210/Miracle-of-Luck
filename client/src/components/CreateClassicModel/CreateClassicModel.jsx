@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { Close as CloseIcon } from "@mui/icons-material";
-import { Snackbar, Alert, Container, Dialog, DialogTitle, DialogContent, IconButton, Typography, Stepper, Step, StepLabel, TextField, Select, Box, MenuItem, Button } from "@mui/material";
+import { Container, Dialog, DialogTitle, DialogContent, IconButton, Typography, Stepper, Step, StepLabel, TextField, Select, Box, MenuItem, Button } from "@mui/material";
+import { toast } from "react-toastify"; // Import toast from react-toastify
 import UploadImage from "../UploadImage/UploadImage";
 import { createLotteryClassic } from "../../utils/api";
 import "./CreateClassicModel.css";
@@ -27,9 +28,6 @@ const CreateClassicModel = ({ open, setOpen }) => {
 
     const [activeStep, setActiveStep] = useState(0);
     const [lotteryDetails, setLotteryDetails] = useState(initialLotteryDetails);
-    const [snackbarOpen, setSnackbarOpen] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState("");
-    const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
     const nextStep = () => setActiveStep((current) => Math.min(current + 1, 3));
     const prevStep = () => setActiveStep((current) => Math.max(current - 1, 0));
@@ -45,7 +43,7 @@ const CreateClassicModel = ({ open, setOpen }) => {
 
     const addPrize = () => setLotteryDetails((prev) => ({
         ...prev,
-        prizes: [...prev.prizes, { place: prev.prizes.length + 1, amount: 0 }] // Add a new prize with place and amount
+        prizes: [...prev.prizes, { place: prev.prizes.length + 1, amount: 0 }] 
     }));
 
     const deleteLastPrize = () => setLotteryDetails((prev) => ({
@@ -61,24 +59,22 @@ const CreateClassicModel = ({ open, setOpen }) => {
 
             const response = await createLotteryClassic(payload, token);
             if (response?.data?.message) {
-                showMessage(response.data.message, "success");
+                toast.success(response.data.message, {
+                    position: "bottom-right",
+                    autoClose: 3000, // Auto close after 3 seconds
+                });
+
                 setTimeout(() => window.location.reload(), 3000);
             } else {
                 throw new Error("Unexpected response format from the server.");
             }
         } catch (error) {
-            showMessage(`Error creating lottery: ${error.response?.data?.message || error.message}`, "error");
+            toast.error(`Error creating lottery: ${error.response?.data?.message || error.message}`, {
+                position: "bottom-right",
+            });
             console.error("Error creating lotteryLike:", error);
         }
     };
-
-    const showMessage = (message, severity) => {
-        setSnackbarMessage(message);
-        setSnackbarSeverity(severity);
-        setSnackbarOpen(true);
-    };
-
-    const handleCloseSnackbar = () => setSnackbarOpen(false);
 
     const canProceedToNextStep = lotteryDetails.paticipationdescription.trim() && lotteryDetails.price > 0 && lotteryDetails.availableNumberRange > 0 && lotteryDetails.drawnNumbersCount > 0 && lotteryDetails.availableNumberRange > lotteryDetails.drawnNumbersCount;
 
@@ -181,10 +177,6 @@ const CreateClassicModel = ({ open, setOpen }) => {
                             </Box>
                         </div>
                     )}
-
-                    <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-                        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>{snackbarMessage}</Alert>
-                    </Snackbar>
                 </Container>
             </DialogContent>
         </Dialog>

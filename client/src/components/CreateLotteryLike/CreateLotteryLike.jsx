@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
-import { Snackbar, Alert, Container, Dialog, DialogTitle, DialogContent, IconButton, Typography, Stepper, Step, StepLabel, TextField, Select, Box, MenuItem, Button, FormControlLabel, FormGroup, Checkbox } from "@mui/material";
+import { Container, Dialog, DialogTitle, DialogContent, IconButton, Typography, Stepper, Step, StepLabel, TextField, Select, Box, MenuItem, Button, FormControlLabel, FormGroup, Checkbox } from "@mui/material";
 import { HelpOutline as OtherIcon, Close as CloseIcon, Phone as PhoneIcon, Email as EmailIcon, Star as StarIcon, ShoppingCart as ShoppingCartIcon, CardGiftcard as GiftCardIcon, Smartphone as SmartphoneIcon, Laptop as LaptopIcon, Headphones as HeadphonesIcon, Watch as WatchIcon, Subscriptions as SubscriptionsIcon, SportsEsports as GamingConsoleIcon, Kitchen as KitchenIcon, Speaker as SpeakerIcon, Face as BeautyIcon, Flight as TravelIcon, Work as FashionIcon, Home as HomeAutomationIcon, Hiking as OutdoorGearIcon, MenuBook as BooksIcon, Pets as PetSuppliesIcon, Camera as CameraIcon, EmojiFoodBeverage as SnackBoxIcon, DirectionsCar as CarIcon, FitnessCenter as FitnessIcon, LocalDining as RestaurantIcon, LocalMall as ShoppingMallIcon, LocalMovies as MovieIcon, LocalBar as BarIcon, Spa as SpaIcon, AirplanemodeActive as AirplaneIcon, DirectionsBoat as BoatIcon, DirectionsBike as BikeIcon, DirectionsBus as BusIcon, Bed as BedIcon, LocalHospital as HospitalIcon, Computer as DesktopIcon, Tablet as TabletIcon, Toys as ToysIcon, MusicNote as MusicNoteIcon, ArtTrack as ArtIcon, FlashOn as FlashIcon, Healing as HealingIcon, Nature as NatureIcon, Palette as PaletteIcon, BeachAccess as BeachIcon, BugReport as BugIcon, Code as CodeIcon, FlashOn as PowerIcon, FitnessCenter as WorkoutIcon } from "@mui/icons-material";
+import { toast } from "react-toastify"; // Import toast from react-toastify
 import UploadImage from "../UploadImage/UploadImage";
 import { createLotteryLike } from "../../utils/api";
 import "./CreateLotteryLike.css";
@@ -84,9 +85,6 @@ const CreateLotteryLike = ({ open, setOpen }) => {
     const [activeStep, setActiveStep] = useState(0);
     const [lotteryDetails, setLotteryDetails] = useState(initialLotteryDetails);
     const [conditions, setConditions] = useState(initialConditions);
-    const [snackbarOpen, setSnackbarOpen] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState("");
-    const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
     const currentDateTime = new Date().toISOString().slice(0, 16);
 
@@ -132,24 +130,22 @@ const CreateLotteryLike = ({ open, setOpen }) => {
             const response = await createLotteryLike(payload, token);
 
             if (response?.data?.message) {
-                showMessage(response.data.message, "success");
+                toast.success(response.data.message, {
+                    position: "bottom-right",
+                    autoClose: 3000, // Auto close after 3 seconds
+                });
+
                 setTimeout(() => window.location.reload(), 3000);
             } else {
                 throw new Error("Unexpected response format from the server.");
             }
         } catch (error) {
-            showMessage(` ${error.response?.data?.message || error.message}`, "error");
+            toast.error(` ${error.response?.data?.message || error.message}`, {
+                position: "bottom-right",
+            });
             console.error("Error creating lotteryLike:", error);
         }
     };
-
-    const showMessage = (message, severity) => {
-        setSnackbarMessage(message);
-        setSnackbarSeverity(severity);
-        setSnackbarOpen(true);
-    };
-
-    const handleCloseSnackbar = () => setSnackbarOpen(false);
 
     const isAnyConditionSelected = Object.values(conditions).some((value) => value);
     const canProceedToNextStep = isAnyConditionSelected && lotteryDetails.paticipationdescription.trim() !== "";
@@ -267,7 +263,7 @@ const CreateLotteryLike = ({ open, setOpen }) => {
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: 2,
-                                        flexDirection: { xs: 'column', sm: 'row' } // Stack vertically on small screens, horizontally on medium and larger screens
+                                        flexDirection: { xs: 'column', sm: 'row' }
                                     }}
                                 >
                                     <Typography sx={{ minWidth: "45px", whiteSpace: "nowrap" }}>Place {index + 1}</Typography>
@@ -277,7 +273,7 @@ const CreateLotteryLike = ({ open, setOpen }) => {
                                         onChange={(e) => handlePrizeChange(index, "icon", e.target.value)}
                                         displayEmpty
                                         sx={{
-                                            minWidth: { xs: '100%', sm: '220px' }, // Full width on small screens, 200px on medium and larger
+                                            minWidth: { xs: '100%', sm: '220px' },
                                             maxWidth: '100%',
                                             display: 'flex',
                                             alignItems: 'center',
@@ -304,7 +300,6 @@ const CreateLotteryLike = ({ open, setOpen }) => {
                             <Box className="flexColCenter NavBut">
                                 <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2, mt: 2 }}>
                                     <button className="button button-green" onClick={prevStep}>Back</button>
-                                    {/* Check if all prizes are filled */}
                                     {lotteryDetails.prizes.every((prize) => prize.description && prize.icon) && (
                                         <button className="button button-blue" onClick={handleFinish}>Finish</button>
                                     )}
@@ -312,12 +307,6 @@ const CreateLotteryLike = ({ open, setOpen }) => {
                             </Box>
                         </div>
                     )}
-
-                    <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-                        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
-                            {snackbarMessage}
-                        </Alert>
-                    </Snackbar>
                 </Container>
             </DialogContent>
         </Dialog>

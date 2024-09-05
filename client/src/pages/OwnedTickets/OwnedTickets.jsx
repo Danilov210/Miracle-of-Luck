@@ -64,10 +64,19 @@ const OwnedTickets = () => {
     navigate(`/ownedtickets/${ticket.lotteryType}/${ticket.lotteryId}`, { state });
   };
 
+  // Check if there are no tickets
+  const noTickets = ticketsFundraising.length === 0 && ticketsClassic.length === 0 && ticketsLike.length === 0;
 
   return (
     <div className="wrapper">
       <div className="flexColCenter paddings innerWidth ticket-container">
+
+        {/* Show message if user has no tickets */}
+        {noTickets && (
+          <div className="primaryText">
+            <h3>You have not purchased any tickets yet.</h3>
+          </div>
+        )}
 
         {/* Fundraising Tickets */}
         {ticketsFundraising.length > 0 && (

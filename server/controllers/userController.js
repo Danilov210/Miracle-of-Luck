@@ -1,8 +1,7 @@
 import asyncHandler from "express-async-handler";
 import { prisma } from "../config/prismaConfig.js";
 
-
-//++ Function to register a new user or return existing user details.
+// Function to register a new user or return existing user details.
 export const createUser = asyncHandler(async (req, res) => {
   // Extract user details from the request body, defaulting to an empty object if not provided
   const { email, firstName, lastName, picture } = req.body.data || {};
@@ -17,10 +16,15 @@ export const createUser = asyncHandler(async (req, res) => {
     const normalizedEmail = email.trim().toLowerCase();
 
     // Check if a user with the provided email already exists in the database
-    const userExists = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+    const userExists = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+    });
 
     if (!userExists) {
       console.log("User does not exist. Registering new user.");
+
+      // Create a fullName by combining firstName and lastName
+      const fullName = `${firstName || ""} ${lastName || ""}`.trim();
 
       // Create a new user in the database with the provided details
       const user = await prisma.user.create({
@@ -29,22 +33,53 @@ export const createUser = asyncHandler(async (req, res) => {
           firstName,
           lastName,
           picture,
+          fullName, // Include the fullName field
         },
       });
 
-      // Return success response with the newly created user details
+      // Return success response with the newly created user details, excluding sensitive fields
       return res.status(201).send({
         message: "User registered successfully",
-        user: user,
+        user: {
+          firstName: user.firstName,
+          lastName: user.lastName,
+          fullName: user.fullName,
+          email: user.email,
+          picture: user.picture,
+          balance: user.balance,
+          accountStatus: user.accountStatus,
+          DataOfBirth: user.DataOfBirth ? new Date(user.DataOfBirth).toLocaleDateString("he-IL") : null, // Format safely for Israel
+          tickets: user.tickets,
+          ownedLotteriesLike: user.ownedLotteriesLike,
+          ownedLotteriesFundraising: user.ownedLotteriesFundraising,
+          ownedLotteriesClassic: user.ownedLotteriesClassic,
+          transactionHistory: user.transactionHistory,
+        },
       });
-
     } else {
       console.log("User already exists. Returning existing user details.");
 
-      // Return a response indicating the user already exists and provide the user details
-      return res.status(200).send({ // Changed status to 200 OK since it's not a new creation
+      // Manually construct user object to exclude password and other sensitive fields
+      const sanitizedUser = {
+        firstName: userExists.firstName,
+        lastName: userExists.lastName,
+        fullName: userExists.fullName,
+        email: userExists.email,
+        picture: userExists.picture,
+        balance: userExists.balance,
+        accountStatus: userExists.accountStatus,
+        DataOfBirth: userExists.DataOfBirth ? new Date(userExists.DataOfBirth).toLocaleDateString("en-GB") : null, // Correct variable usage
+        tickets: userExists.tickets,
+        ownedLotteriesLike: userExists.ownedLotteriesLike,
+        ownedLotteriesFundraising: userExists.ownedLotteriesFundraising,
+        ownedLotteriesClassic: userExists.ownedLotteriesClassic,
+        transactionHistory: userExists.transactionHistory,
+      };
+
+      // Return a response indicating the user already exists
+      return res.status(200).send({
         message: "User already registered",
-        user: userExists // Include the existing user details in the response
+        user: sanitizedUser, // Return sanitized user details
       });
     }
   } catch (err) {
@@ -55,6 +90,8 @@ export const createUser = asyncHandler(async (req, res) => {
     return res.status(500).send({ message: "An error occurred while creating the user." });
   }
 });
+
+
 
 //++ Function to handle Fundraising ticket purchase for fundraising
 export const buyTicketFundraising = asyncHandler(async (req, res) => {
@@ -163,7 +200,7 @@ export const buyTicketClassic = asyncHandler(async (req, res) => {
         ticketNumber: `${lotteryId}-${Date.now()}`, // Unique ticket number
         purchaseDate: new Date(),
         status: "Active",
-        numbers:selectedNumbers, // Store the user-chosen numbers in the ticket
+        numbers: selectedNumbers, // Store the user-chosen numbers in the ticket
         user: {
           connect: { id: user.id }, // Associate the ticket with the user
         },
@@ -254,7 +291,7 @@ export const getUserOwnedTickets = asyncHandler(async (req, res) => {
   }
 });
 
-// Function to cancel a ticket by a user
+//++ Function to cancel a ticket by a user
 export const cancelTicket = asyncHandler(async (req, res) => {
   try {
 
@@ -308,13 +345,145 @@ export const cancelTicket = asyncHandler(async (req, res) => {
         },
       }),
     ]);
-    console.log("Ticket canceled and deleted successfully:", ticketId);
+    console.log("Ticket canceled successfully:", ticketId);
 
     return res.status(201).json({
-      message: "Ticket canceled and deleted successfully"
+      message: "Ticket canceled successfully"
     });
   } catch (error) {
     console.error("Error canceling ticket:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+// Function to delete a lottery by a user and refund users
+export const cancelLottery = asyncHandler(async (req, res) => {
+  try {
+    const { lotteryId, lotteryType } = req.body.data; // Get lottery ID and type from the request
+
+    console.log("Received lotteryId:", lotteryId, "and lotteryType:", lotteryType);
+
+    // Validate that lotteryId and lotteryType are provided
+    if (!lotteryId || !lotteryType) {
+      return res.status(400).json({ error: "Lottery ID and Type are required" });
+    }
+
+    // Determine the lottery type and fetch the associated lottery details
+    let lottery, refundAmountPerTicket;
+    if (lotteryType === "Like") {
+      lottery = await prisma.lotteryLike.findUnique({ where: { id: lotteryId } });
+      refundAmountPerTicket = lottery.price || 0; // Assuming price field for "Like" lotteries
+    } else if (lotteryType === "Fundraising") {
+      lottery = await prisma.lotteryFundraising.findUnique({ where: { id: lotteryId } });
+      refundAmountPerTicket = lottery.price || 0;
+    } else if (lotteryType === "Classic") {
+      lottery = await prisma.lotteryClassic.findUnique({ where: { id: lotteryId } });
+      refundAmountPerTicket = lottery.price || 0;
+    } else {
+      return res.status(400).json({ error: "Invalid lottery type" });
+    }
+
+    if (!lottery) {
+      return res.status(404).json({ error: "Lottery not found" });
+    }
+
+    // Fetch all tickets associated with the lottery
+    const tickets = await prisma.ticket.findMany({
+      where: { lotteryId },
+    });
+
+    // Calculate total refunds for each user
+    const userRefunds = tickets.reduce((acc, ticket) => {
+      const userId = ticket.userId;
+      acc[userId] = (acc[userId] || 0) + refundAmountPerTicket;
+      return acc;
+    }, {});
+
+    // Perform the deletion and refund operations in a transaction
+    const deletedLottery = await prisma.$transaction([
+      // Refund users
+      ...Object.entries(userRefunds).map(([userId, refundAmount]) =>
+        prisma.user.update({
+          where: { id: userId },
+          data: { balance: { increment: refundAmount } },
+        })
+      ),
+      // Delete associated tickets
+      prisma.ticket.deleteMany({ where: { lotteryId } }),
+      // Delete the lottery
+      lotteryType === "Like"
+        ? prisma.lotteryLike.delete({ where: { id: lotteryId } })
+        : lotteryType === "Fundraising"
+          ? prisma.lotteryFundraising.delete({ where: { id: lotteryId } })
+          : prisma.lotteryClassic.delete({ where: { id: lotteryId } }),
+    ]);
+
+    console.log("Lottery deleted successfully:", lotteryId);
+
+    return res.status(200).json({
+      message: "Lottery deleted successfully",
+      deletedLottery,
+    });
+  } catch (error) {
+    console.error("Error deleting lottery:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Async handler function to update user details
+export const updateUserProfile = async (req, res) => {
+  try {
+    const { email, firstName, lastName, password, DataOfBirth } = req.body.data;
+
+    // Validate the required fields (e.g., email must be provided)
+    if (!email) {
+      return res.status(400).json({ error: "User email is required." });
+    }
+
+    const updateData = {};
+
+    // Prepare update fields
+    if (firstName) updateData.firstName = firstName;
+    if (lastName) updateData.lastName = lastName;
+    if (password) updateData.password = password;
+    if (DataOfBirth) updateData.DataOfBirth = new Date(DataOfBirth);
+
+    // If either firstName or lastName is provided, update the fullName field
+    if (firstName || lastName) {
+      // Fetch the current user data to retain unchanged fields for fullName construction
+      const currentUser = await prisma.user.findUnique({
+        where: { email: email },
+      });
+
+      if (!currentUser) {
+        return res.status(404).json({ error: "User not found." });
+      }
+
+      // Construct the fullName using the updated firstName and lastName or fallback to existing values
+      updateData.fullName = `${firstName || currentUser.firstName || ''} ${lastName || currentUser.lastName || ''}`.trim();
+    }
+
+    // Update the user details in the database
+    const updatedUser = await prisma.user.update({
+      where: { email: email },
+      data: updateData,
+    });
+
+    // Format DataOfBirth to "he-IL" locale before sending the response
+    const formattedUser = {
+      ...updatedUser,
+      DataOfBirth: updatedUser.DataOfBirth ? new Date(updatedUser.DataOfBirth).toLocaleDateString("en-GB") : null,
+    };
+
+    // Respond with the updated user details
+    res.status(200).send({
+      message: "User profile updated successfully",
+      user: formattedUser,
+    });
+
+    console.log("User profile updated successfully");
+  } catch (error) {
+    console.error("Error updating user profile:", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};

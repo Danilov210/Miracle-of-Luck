@@ -1,24 +1,23 @@
 import React, { useState } from "react";
-import { useQuery } from "react-query";
-import { Snackbar, Alert } from "@mui/material";
+import { useQuery, useMutation } from "react-query";
+import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import {  getLotteryFundraising } from "../../utils/api";
+import { CancelUserTicket, getLotteryFundraising, CancelLottery } from "../../utils/api"; // Import CancelLottery API
 import { PuffLoader } from "react-spinners";
 import { AiFillHeart } from "react-icons/ai";
 import "./LotteryFundraising.css";
 import useAuthCheck from "../../hooks/useAuthCheck";
 import { useAuth0 } from "@auth0/auth0-react";
-import { useLocation } from "react-router-dom"; // Import useLocation to access the state
+import { useLocation } from "react-router-dom";
+import { Box } from "@mui/material";
+
 import LotteryClassicTicketPurchase from "../../components/LotteryFundraisingTicketPurchase/LotteryFundraisingTicketPurchase";
 
 const LotteryFundraising = () => {
-  const location = useLocation(); // Get the current location
-  const { state } = location; // Extract state from location
-  const ticketId = state?.ticketId; // Get ticketId if available from state
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-  const handleCloseSnackbar = () => setSnackbarOpen(false);
+  const location = useLocation();
+  const { state } = location;
+  const ticketId = state?.ticketId;
+  const cancelLotteryOption = state?.cancelLotteryOption; // Check if cancelLotteryOption exists
   const navigate = useNavigate();
 
   const id = location.pathname.split("/").pop();
@@ -27,32 +26,56 @@ const LotteryFundraising = () => {
   const { validateLogin } = useAuthCheck();
   const { user } = useAuth0();
 
-  if (isLoading) return <div className="wrapper flexCenter paddings"><PuffLoader /></div>;
-  if (isError) return <div className="wrapper flexCenter paddings">Error while fetching the lottery details</div>;
-
-  const { title, description, hosted, startDate, price, prizes, image, paticipationdescription, link } = data;
-
-  const showMessage = (message, severity) => {
-    setSnackbarMessage(message);
-    setSnackbarSeverity(severity);
-    setSnackbarOpen(true);
-  };
-
-  const handleTicketCancel = async () => {
-    try {
-      const response = await CancelUserTicket(ticketId);
-
+  // Mutation to handle ticket cancellation
+  const cancelTicketMutation = useMutation({
+    mutationFn: () => CancelUserTicket(ticketId),
+    onSuccess: (response) => {
       if (response?.data?.message) {
-        showMessage(response.data.message, "success");
-        navigate("/ownedtickets");
-      } else {
-        throw new Error("Unexpected response format from the server.");
+        toast.success(response.data.message, {
+          position: "bottom-right",
+          autoClose: 3000,
+        });
+        setTimeout(() => {
+          navigate("/ownedtickets");
+        }, 1000);
       }
-    } catch (error) {
-      showMessage(` ${error.response?.data?.message || error.message}`, "error");
-      console.error("Error creating lotteryLike:", error);
-    }
-  };
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || error.message, {
+        position: "bottom-right",
+      });
+    },
+    onSettled: () => setTicketModalOpened(false),
+  });
+
+  // Mutation to handle lottery cancellation
+  const cancelLotteryMutation = useMutation({
+    mutationFn: () => CancelLottery(id, "Fundraising"), // Pass lotteryId and "Fundraising" as parameters
+    onSuccess: (response) => {
+      if (response?.data?.message) {
+        toast.success(response.data.message, {
+          position: "bottom-right",
+          autoClose: 3000,
+        });
+        setTimeout(() => {
+          navigate("/ownedlotteries");
+        }, 1000);
+      }
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || error.message, {
+        position: "bottom-right",
+      });
+    },
+  });
+
+  const { title, description, hosted, startDate, price, prizes, image, paticipationdescription, link } = data || {};
+
+  // Show loading spinner while data is loading
+  if (isLoading) return <div className="wrapper flexCenter paddings"><PuffLoader /></div>;
+
+  // Show error message if there is an error fetching data
+  if (isError) return <div className="wrapper flexCenter paddings">Error while fetching the lottery details</div>;
 
   return (
     <div className="wrapper">
@@ -76,26 +99,38 @@ const LotteryFundraising = () => {
             </>
           )}
           {link && <span className="primaryText">Link: <a href={link} target="_blank" rel="noopener noreferrer" className="primary2Text">{link}</a></span>}
-          <button
-            className={`button ${ticketId ? 'button-red' : 'button-green'}`} // Dynamically set button color
-            onClick={() => {
-              if (ticketId) {
-                handleTicketCancel();
-              } else {
-                if (validateLogin()) {
-                  setTicketModalOpened(true);
-                }
-              }
-            }}
-          >
-            {ticketId ? "Cancel Ticket" : "Buy Ticket"}
-          </button>
+          <Box className="flexColCenter NavBut">
+            <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2, mt: 2 }}>
+              <button
+                className={`button ${ticketId ? 'button-red' : 'button-green'}`}
+                onClick={() => {
+                  if (ticketId) {
+                    cancelTicketMutation.mutate();
+                  } else {
+                    if (validateLogin()) {
+                      setTicketModalOpened(true);
+                    }
+                  }
+                }}
+              >
+                {ticketId ? "Cancel Ticket" : "Buy Ticket"}
+              </button>
+              {/* Conditionally render the cancel lottery button if cancelLotteryOption exists */}
+              {cancelLotteryOption && (
+                <button
+                  className="button button-red"
+                  onClick={() => {
+                    if (cancelLotteryOption) {
+                      cancelLotteryMutation.mutate(); // Trigger lottery cancellation
+                    }
+                  }}
+                >
+                  Cancel Lottery
+                </button>
+              )}
+            </Box>
+          </Box>
           <LotteryClassicTicketPurchase opened={ticketModalOpened} setOpened={setTicketModalOpened} lotteryId={id} email={user?.email} ticketPrice={price} />
-          <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-            <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
-              {snackbarMessage}
-            </Alert>
-          </Snackbar>
         </div>
       </div>
     </div>

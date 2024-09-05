@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Avatar, Menu, MenuItem, IconButton, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import UserDetailContext from "../../context/UserDetailContext";
 import "./ProfileMenu.css";
 
 const ProfileMenu = ({ user, logout }) => {
+  const { userDetails } = useContext(UserDetailContext);
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState(null);
 
@@ -15,18 +17,24 @@ const ProfileMenu = ({ user, logout }) => {
     setAnchorEl(null);
   };
 
+  const handleLogout = () => {
+    localStorage.clear();
+    logout(); // Ensure logout is a valid function passed as a prop
+    handleClose();
+  };
+
   return (
     <>
       <IconButton onClick={handleClick} className="icon-button" style={{ display: 'flex', alignItems: 'center' }}>
         <Avatar
-          src={user?.picture || "/path/to/default/image.jpg"}
+          src={userDetails?.picture || "/path/to/default/image.jpg"} // Safely access picture
           className="avatar-small"
-          alt={user?.name || "User Avatar"}
+          alt={userDetails?.fullName || "User Avatar"} // Safely access fullName
           sx={{ width: 40, height: 40 }}
           onError={(e) => { e.target.src = "/path/to/default/image.jpg"; }}
         />
         <Typography variant="body1" className="user-name" style={{ marginLeft: '8px' }}>
-          {user?.name}
+          {userDetails?.fullName || "Guest"} {/* Fallback to "Guest" if fullName is not available */}
         </Typography>
       </IconButton>
       <Menu
@@ -42,20 +50,16 @@ const ProfileMenu = ({ user, logout }) => {
           horizontal: 'right',
         }}
       >
-        {/* Updated this MenuItem to navigate to /ownedlotteries */}
+        <MenuItem onClick={() => { handleClose(); navigate("/userdetails"); }}>
+          Manage your Account
+        </MenuItem>
         <MenuItem onClick={() => { handleClose(); navigate("/ownedlotteries"); }}>
           Owned Lotteries
         </MenuItem>
         <MenuItem onClick={() => { handleClose(); navigate("/ownedtickets"); }}>
-        My Tickets
+          My Tickets
         </MenuItem>
-        <MenuItem
-          onClick={() => {
-            localStorage.clear();
-            logout();
-            handleClose();
-          }}
-        >
+        <MenuItem onClick={handleLogout}>
           Logout
         </MenuItem>
       </Menu>

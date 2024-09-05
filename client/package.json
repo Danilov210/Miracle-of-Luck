@@ -26,6 +26,7 @@
     "@modulz/radix-icons": "^4.0.0",
     "@mui/material": "^5.16.7",
     "axios": "^1.7.5",
+    "date-fns": "^3.6.0",
     "dayjs": "^1.11.13",
     "framer-motion": "^11.3.30",
     "leaflet": "^1.9.4",
