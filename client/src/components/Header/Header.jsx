@@ -25,6 +25,16 @@ const Header = () => {
     };
   }, []);
 
+  const handleLogin = () => {
+    loginWithRedirect({
+      redirectUri: window.location.origin,
+      appState: { targetUrl: window.location.pathname }, // This will return the user to the page they were on after logging in
+      authorizationParams: {
+        screen_hint: "login", // This will show the login page instead of the signup page
+      },
+    });
+  };
+
   const getMenuStyles = (menuOpened) => ({
     right: document.documentElement.clientWidth <= 800 && !menuOpened ? "-100%" : "0",
   });
@@ -48,7 +58,7 @@ const Header = () => {
           <div className="flexCenter h-menu" style={getMenuStyles(menuOpened)}>
             {isScreenSmall ? (
               !isAuthenticated ? (
-                <button className="button button-green" onClick={loginWithRedirect}>
+                <button className="button button-green" onClick={handleLogin}>
                   Login
                 </button>
               ) : (
@@ -68,7 +78,7 @@ const Header = () => {
             </Link>
 
             {!isScreenSmall && !isAuthenticated ? (
-              <button className="button button-green" onClick={loginWithRedirect}>
+              <button className="button button-green" onClick={handleLogin}>
                 Login
               </button>
             ) : (

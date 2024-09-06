@@ -21,6 +21,8 @@ import OwnedLotteries from "./pages/OwnedLotteries/OwnedLotteries";
 import OwnedTickets from "./pages/OwnedTickets/OwnedTickets";
 import { MantineProvider } from "@mantine/core";
 import UserDetails from "./pages/UserDetails/UserDetails";
+import Transactions from "./pages/Transactions/Transactions";
+
 
 function App() {
   const queryClient = new QueryClient();
@@ -87,6 +89,11 @@ function App() {
                   {/* User Details Route */}
                   <Route path="/userdetails">
                     <Route index element={<UserDetails />} />
+                  </Route>
+
+                  {/* User Details Route */}
+                  <Route path="/Transactions">
+                    <Route index element={<Transactions />} />
                   </Route>
                 </Route>
               </Routes>

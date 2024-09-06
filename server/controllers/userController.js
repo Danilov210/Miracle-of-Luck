@@ -5,7 +5,6 @@ import { prisma } from "../config/prismaConfig.js";
 export const createUser = asyncHandler(async (req, res) => {
   // Extract user details from the request body, defaulting to an empty object if not provided
   const { email, firstName, lastName, picture } = req.body.data || {};
-
   // Validate that the email is provided
   if (!email) {
     return res.status(400).send({ message: "Email is required" }); // Send a 400 Bad Request if email is missing
@@ -121,40 +120,58 @@ export const buyTicketFundraising = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: "Lottery not found" });
     }
 
-    // Create the tickets and associate them with the lottery and user
-    const tickets = [];
-    for (let i = 0; i < ticketNumber; i++) {
-      const ticket = await prisma.ticket.create({
+    // Use a transaction to ensure all operations are completed atomically
+    const result = await prisma.$transaction(async (prisma) => {
+      const tickets = [];
+
+      // Create the tickets and associate them with the lottery and user
+      for (let i = 0; i < ticketNumber; i++) {
+        const ticket = await prisma.ticket.create({
+          data: {
+            lotteryType: "Fundraising",
+            ticketNumber: `${lotteryId}-${Date.now()}-${i}`, // Unique ticket number
+            purchaseDate: new Date(),
+            status: "Active",
+            user: {
+              connect: { id: user.id }, // Associate the ticket with the user
+            },
+            lotteryFundraising: {
+              connect: { id: lotteryId }, // Associate the ticket with the specific lottery
+            },
+          },
+        });
+
+        tickets.push(ticket);
+      }
+
+      // Deduct the total ticket price from the user's balance
+      await prisma.user.update({
+        where: { email },
         data: {
-          lotteryType: "Fundraising",
-          ticketNumber: `${lotteryId}-${Date.now()}-${i}`, // Unique ticket number
-          purchaseDate: new Date(),
-          status: "Active",
-          user: {
-            connect: { id: user.id }, // Associate the ticket with the user
-          },
-          lotteryFundraising: {
-            connect: { id: lotteryId }, // Associate the ticket with the specific lottery
-          },
+          balance: { decrement: totalPrice },
         },
       });
 
-      tickets.push(ticket);
-    }
+      // Create a transaction entry for the ticket purchase
+      const transaction = await prisma.transaction.create({
+        data: {
+          amount: totalPrice,
+          transactionType: "PurchaseTicket",
+          user: {
+            connect: { id: user.id },
+          },
+          createdAt: new Date(), // Include current timestamp
+        },
+      });
 
-    // Deduct the total ticket price from the user's balance
-    await prisma.user.update({
-      where: { email },
-      data: {
-        balance: { decrement: totalPrice },
-      },
+      return { tickets, transaction };
     });
 
     // Return success response
-    console.log("Ticket(s) purchased successfully.");
+    console.log("Ticket(s) purchased and transaction created successfully.");
     return res.status(201).json({
       message: "Ticket(s) purchased successfully.",
-      tickets,
+      tickets: result.tickets,
     });
   } catch (err) {
     // Log the error message for debugging
@@ -167,8 +184,9 @@ export const buyTicketFundraising = asyncHandler(async (req, res) => {
 
 //++ Function to handle Classic ticket purchase for fundraising
 export const buyTicketClassic = asyncHandler(async (req, res) => {
-  const { lotteryId, email, totalPrice, selectedNumbers } = req.body.data; // No need for ticketNumber since it's one ticket per purchase
+  const { lotteryId, email, totalPrice, selectedNumbers } = req.body.data;
   console.log(req.body.data);
+
   try {
     // Find the user by email
     const user = await prisma.user.findUnique({
@@ -193,36 +211,53 @@ export const buyTicketClassic = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: "Lottery not found" });
     }
 
-    // Create the ticket and associate it with the lottery and user
-    const ticket = await prisma.ticket.create({
-      data: {
-        lotteryType: "Classic",
-        ticketNumber: `${lotteryId}-${Date.now()}`, // Unique ticket number
-        purchaseDate: new Date(),
-        status: "Active",
-        numbers: selectedNumbers, // Store the user-chosen numbers in the ticket
-        user: {
-          connect: { id: user.id }, // Associate the ticket with the user
+    // Use a transaction to ensure all operations are completed atomically
+    const result = await prisma.$transaction(async (prisma) => {
+      // Create the ticket and associate it with the lottery and user
+      const ticket = await prisma.ticket.create({
+        data: {
+          lotteryType: "Classic",
+          ticketNumber: `${lotteryId}-${Date.now()}`, // Unique ticket number
+          purchaseDate: new Date(),
+          status: "Active",
+          numbers: selectedNumbers, // Store the user-chosen numbers in the ticket
+          user: {
+            connect: { id: user.id }, // Associate the ticket with the user
+          },
+          lotteryClassic: {
+            connect: { id: lotteryId }, // Associate the ticket with the specific classic lottery
+          },
         },
-        lotteryClassic: {
-          connect: { id: lotteryId }, // Associate the ticket with the specific classic lottery
-        },
-      },
-    });
+      });
 
-    // Deduct the total ticket price from the user's balance
-    await prisma.user.update({
-      where: { email },
-      data: {
-        balance: { decrement: totalPrice },
-      },
+      // Deduct the total ticket price from the user's balance
+      await prisma.user.update({
+        where: { email },
+        data: {
+          balance: { decrement: totalPrice },
+        },
+      });
+
+      // Create a transaction entry for the ticket purchase
+      const transaction = await prisma.transaction.create({
+        data: {
+          amount: totalPrice,
+          transactionType: "PurchaseTicket",
+          user: {
+            connect: { id: user.id },
+          },
+          createdAt: new Date(), // Include current timestamp
+        },
+      });
+
+      return { ticket, transaction };
     });
 
     // Return success response
-    console.log("Ticket purchased successfully.");
+    console.log("Ticket purchased and transaction created successfully.");
     return res.status(201).json({
       message: "Ticket purchased successfully.",
-      ticket,
+      ticket: result.ticket,
     });
   } catch (err) {
     // Log the error message for debugging
@@ -294,7 +329,6 @@ export const getUserOwnedTickets = asyncHandler(async (req, res) => {
 //++ Function to cancel a ticket by a user
 export const cancelTicket = asyncHandler(async (req, res) => {
   try {
-
     const { ticketId } = req.body.data;
 
     console.log("Received ticketId:", ticketId);
@@ -333,22 +367,34 @@ export const cancelTicket = asyncHandler(async (req, res) => {
     // Calculate the refund amount (assuming the price is in the lottery model)
     const refundAmount = lottery.price;
 
-    // Update the user's balance and delete the ticket in a single transaction
+    // Update the user's balance, delete the ticket, and create a transaction in a single transaction
     await prisma.$transaction([
+      // Delete the ticket
       prisma.ticket.delete({
         where: { id: ticketId },
       }),
+      // Update user's balance
       prisma.user.update({
         where: { id: ticket.userId },
         data: {
           balance: { increment: refundAmount },
         },
       }),
+      // Create a transaction entry for the ticket cancellation
+      prisma.transaction.create({
+        data: {
+          amount: refundAmount,
+          transactionType: "CancelTicket",
+          user: { connect: { id: ticket.userId } },
+          createdAt: new Date(), // Include the current timestamp
+        },
+      }),
     ]);
+
     console.log("Ticket canceled successfully:", ticketId);
 
     return res.status(201).json({
-      message: "Ticket canceled successfully"
+      message: "Ticket canceled successfully",
     });
   } catch (error) {
     console.error("Error canceling ticket:", error);
@@ -356,73 +402,74 @@ export const cancelTicket = asyncHandler(async (req, res) => {
   }
 });
 
-// Function to delete a lottery by a user and refund users
+
+// Function to delete a lottery by a user
 export const cancelLottery = asyncHandler(async (req, res) => {
   try {
-    const { lotteryId, lotteryType } = req.body.data; // Get lottery ID and type from the request
+    const { lotteryId, lotteryType } = req.body.data;
 
-    console.log("Received lotteryId:", lotteryId, "and lotteryType:", lotteryType);
-
-    // Validate that lotteryId and lotteryType are provided
     if (!lotteryId || !lotteryType) {
       return res.status(400).json({ error: "Lottery ID and Type are required" });
     }
 
     // Determine the lottery type and fetch the associated lottery details
-    let lottery, refundAmountPerTicket;
-    if (lotteryType === "Like") {
-      lottery = await prisma.lotteryLike.findUnique({ where: { id: lotteryId } });
-      refundAmountPerTicket = lottery.price || 0; // Assuming price field for "Like" lotteries
-    } else if (lotteryType === "Fundraising") {
-      lottery = await prisma.lotteryFundraising.findUnique({ where: { id: lotteryId } });
-      refundAmountPerTicket = lottery.price || 0;
-    } else if (lotteryType === "Classic") {
-      lottery = await prisma.lotteryClassic.findUnique({ where: { id: lotteryId } });
-      refundAmountPerTicket = lottery.price || 0;
-    } else {
-      return res.status(400).json({ error: "Invalid lottery type" });
-    }
+    const lottery = await prisma[
+      lotteryType === "Like"
+        ? "lotteryLike"
+        : lotteryType === "Fundraising"
+          ? "lotteryFundraising"
+          : "lotteryClassic"
+    ].findUnique({ where: { id: lotteryId } });
 
     if (!lottery) {
       return res.status(404).json({ error: "Lottery not found" });
     }
 
+    const refundAmountPerTicket = lottery.price || 0;
+
     // Fetch all tickets associated with the lottery
-    const tickets = await prisma.ticket.findMany({
-      where: { lotteryId },
-    });
+    const tickets = await prisma.ticket.findMany({ where: { lotteryId } });
 
     // Calculate total refunds for each user
-    const userRefunds = tickets.reduce((acc, ticket) => {
-      const userId = ticket.userId;
+    const userRefunds = tickets.reduce((acc, { userId }) => {
       acc[userId] = (acc[userId] || 0) + refundAmountPerTicket;
       return acc;
     }, {});
 
-    // Perform the deletion and refund operations in a transaction
-    const deletedLottery = await prisma.$transaction([
-      // Refund users
-      ...Object.entries(userRefunds).map(([userId, refundAmount]) =>
+    // Perform the deletion, refund, and transaction creation in a transaction
+    await prisma.$transaction([
+      // Refund users and create a "Cancel Ticket" transaction for each refund
+      ...Object.entries(userRefunds).flatMap(([userId, refundAmount]) => [
         prisma.user.update({
           where: { id: userId },
           data: { balance: { increment: refundAmount } },
+        }),
+        prisma.transaction.create({
+          data: {
+            amount: refundAmount,
+            transactionType: "CancelTicket",
+            user: { connect: { id: userId } },
+            createdAt: new Date(), // Include current timestamp
+          }
         })
-      ),
+      ]),
       // Delete associated tickets
       prisma.ticket.deleteMany({ where: { lotteryId } }),
       // Delete the lottery
-      lotteryType === "Like"
-        ? prisma.lotteryLike.delete({ where: { id: lotteryId } })
-        : lotteryType === "Fundraising"
-          ? prisma.lotteryFundraising.delete({ where: { id: lotteryId } })
-          : prisma.lotteryClassic.delete({ where: { id: lotteryId } }),
+      prisma[
+        lotteryType === "Like"
+          ? "lotteryLike"
+          : lotteryType === "Fundraising"
+            ? "lotteryFundraising"
+            : "lotteryClassic"
+      ].delete({
+        where: { id: lotteryId },
+      }),
     ]);
 
-    console.log("Lottery deleted successfully:", lotteryId);
 
-    return res.status(200).json({
-      message: "Lottery deleted successfully",
-      deletedLottery,
+    res.status(200).json({
+      message: "Lottery deleted successfully.",
     });
   } catch (error) {
     console.error("Error deleting lottery:", error);
@@ -430,60 +477,110 @@ export const cancelLottery = asyncHandler(async (req, res) => {
   }
 });
 
-// Async handler function to update user details
-export const updateUserProfile = async (req, res) => {
+
+
+
+//++ Function update user details
+export const updateUserProfile = asyncHandler(async (req, res) => {
   try {
-    const { email, firstName, lastName, password, DataOfBirth } = req.body.data;
+    console.log(req.body.data)
+    const { email, firstName, lastName, DataOfBirth, picture } = req.body.data;
+    if (!email) return res.status(400).json({ error: "User email is required." });
 
-    // Validate the required fields (e.g., email must be provided)
-    if (!email) {
-      return res.status(400).json({ error: "User email is required." });
-    }
+    const updateData = {
+      firstName,
+      lastName,
+      DataOfBirth: DataOfBirth ? new Date(DataOfBirth) : undefined,
+      picture
+    };
 
-    const updateData = {};
-
-    // Prepare update fields
-    if (firstName) updateData.firstName = firstName;
-    if (lastName) updateData.lastName = lastName;
-    if (password) updateData.password = password;
-    if (DataOfBirth) updateData.DataOfBirth = new Date(DataOfBirth);
-
-    // If either firstName or lastName is provided, update the fullName field
+    // Fetch current user if fullName needs updating
     if (firstName || lastName) {
-      // Fetch the current user data to retain unchanged fields for fullName construction
-      const currentUser = await prisma.user.findUnique({
-        where: { email: email },
-      });
-
-      if (!currentUser) {
-        return res.status(404).json({ error: "User not found." });
-      }
-
-      // Construct the fullName using the updated firstName and lastName or fallback to existing values
+      const currentUser = await prisma.user.findUnique({ where: { email } });
+      if (!currentUser) return res.status(404).json({ error: "User not found." });
       updateData.fullName = `${firstName || currentUser.firstName || ''} ${lastName || currentUser.lastName || ''}`.trim();
     }
 
-    // Update the user details in the database
-    const updatedUser = await prisma.user.update({
-      where: { email: email },
+    // Update user and format response
+    const { accountStatus: __, ...updatedUser } = await prisma.user.update({
+      where: { email },
       data: updateData,
     });
 
-    // Format DataOfBirth to "he-IL" locale before sending the response
-    const formattedUser = {
-      ...updatedUser,
-      DataOfBirth: updatedUser.DataOfBirth ? new Date(updatedUser.DataOfBirth).toLocaleDateString("en-GB") : null,
-    };
-
-    // Respond with the updated user details
     res.status(200).send({
       message: "User profile updated successfully",
-      user: formattedUser,
+      user: {
+        ...updatedUser,
+        DataOfBirth: updatedUser.DataOfBirth ? new Date(updatedUser.DataOfBirth).toLocaleDateString("en-GB") : null,
+      }
     });
 
-    console.log("User profile updated successfully");
   } catch (error) {
     console.error("Error updating user profile:", error.message);
     res.status(500).json({ error: "Internal server error" });
   }
-};
+});
+
+//+++ Function creating a new transaction
+export const createTransaction = asyncHandler(async (req, res) => {
+  const { email, cardNumber, amount, type } = req.body.data;
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const transactionResult = await prisma.$transaction(async (prisma) => {
+      const transaction = await prisma.transaction.create({
+        data: { amount, transactionType: type, creditCard: cardNumber, user: { connect: { id: user.id } } },
+      });
+
+      if (type === "Deposit") await prisma.user.update({ where: { email }, data: { balance: { increment: amount } } });
+      if (type === "Withdraw") {
+        if (user.balance < amount) throw new Error("Insufficient balance");
+        await prisma.user.update({ where: { email }, data: { balance: { decrement: amount } } });
+      }
+
+      return transaction;
+    });
+
+    const updatedUser = await prisma.user.findUnique({ where: { email } });
+    if (!updatedUser) return res.status(404).json({ message: "User not found after transaction." });
+
+    const { firstName, lastName, fullName, DataOfBirth, picture, balance } = updatedUser;
+    res.status(201).json({
+      message: "Transaction processed successfully.",
+      user: { email, firstName, lastName, fullName, DataOfBirth: DataOfBirth ? new Date(DataOfBirth).toLocaleDateString("en-GB") : null, picture, balance }
+    });
+  } catch (error) {
+    res.status(error.message === "Insufficient balance" ? 400 : 500).json({ message: error.message || "Internal server error" });
+  }
+});
+
+// Function to retrieve all transactions for a specific user
+export const getUserTransactions = asyncHandler(async (req, res) => {
+  const { email } = req.body.data; // Extract email from the request body
+
+  try {
+    // Find the user by email
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Fetch all transactions associated with the user's ID
+    const transactions = await prisma.transaction.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: 'desc' }, // Optional: order by creation date
+    });
+
+    return res.status(200).json({
+      message: "Transactions retrieved successfully.",
+      transactions,
+    });
+  } catch (error) {
+    console.error("Error fetching transactions:", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});

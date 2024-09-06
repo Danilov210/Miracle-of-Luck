@@ -9,7 +9,7 @@ export const createUser = async (data, token) => {
   try {
     const response = await api.post(
       `/user/register`,
-      { data }, 
+      { data },
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -19,7 +19,6 @@ export const createUser = async (data, token) => {
 
     // Extract and store the data from the response
     const receivedData = response.data; // Store the data from the response
-    console.log("responsCreate",receivedData);
     return receivedData; // Return the data for further use
   } catch (error) {
     if (error.response) {
@@ -141,11 +140,11 @@ export const createLotteryLike = async (data, token) => {
       }
     );
 
-    return res; 
+    return res;
 
   } catch (error) {
     console.error("Error sending lottery data:", error);
-    throw error; 
+    throw error;
   }
 };
 
@@ -162,10 +161,10 @@ export const createLotteryFundraising = async (data, token) => {
       }
     );
 
-    return res; 
+    return res;
   } catch (error) {
     console.error("Error sending lottery data:", error);
-    throw error; 
+    throw error;
   }
 };
 
@@ -181,28 +180,28 @@ export const createLotteryClassic = async (data, token) => {
       }
     );
 
-    return res; 
+    return res;
 
   } catch (error) {
     console.error("Error sending lottery data:", error);
-    throw error; 
+    throw error;
   }
 };
 
 export const BuyTicketFundraising = async (data, token) => {
   try {
-    
+
     const res = await api.post(
-      `user/BuyTicketFundraising`, 
+      `user/BuyTicketFundraising`,
       { data },
       {
         headers: {
-          Authorization: `Bearer ${token}`, 
+          Authorization: `Bearer ${token}`,
         },
       }
     );
 
-    return res; 
+    return res;
 
   } catch (error) {
     toast.error("Buy Ticket Fundraising went wrong, Please try again");
@@ -213,15 +212,15 @@ export const BuyTicketFundraising = async (data, token) => {
 export const BuyTicketClassic = async (data, token) => {
   try {
     const res = await api.post(
-      `user/BuyTicketClassic`, 
+      `user/BuyTicketClassic`,
       { data },
       {
         headers: {
-          Authorization: `Bearer ${token}`, 
+          Authorization: `Bearer ${token}`,
         },
       }
     );
-    return res; 
+    return res;
   } catch (error) {
     toast.error("Buy Ticket Classic went wrong, Please try again");
     throw error;
@@ -240,7 +239,7 @@ export const getAllUserOwnedLotteries = async (email) => {
 export const getAllUserLotteries = async (email) => {
   try {
     const response = await api.post('/user/UserLottoriesTickets', {
-      data:  email ,
+      data: email,
     });
     return response;
   } catch (error) {
@@ -252,10 +251,10 @@ export const getAllUserLotteries = async (email) => {
 export const CancelUserTicket = async (ticketId) => {
   try {
     const response = await api.post('/user/CancelTicket', {
-      data:  {ticketId} ,
+      data: { ticketId },
     });
     return response;
-    
+
   } catch (error) {
     console.error("Error fetching user's lotteries:", error.message);
     throw new Error("Failed to fetch user lotteries.");
@@ -280,7 +279,7 @@ export const CancelLottery = async (lotteryId, lotteryType) => {
 export const updateUserDetails = async (updatedDetails, token) => {
   try {
     // Only include fields that are allowed to be updated
-    const allowedFields = ['email','firstName', 'lastName', 'fullName', 'picture', 'DataOfBirth'];
+    const allowedFields = ['email', 'firstName', 'lastName', 'fullName', 'picture', 'DataOfBirth'];
     const sanitizedDetails = Object.keys(updatedDetails)
       .filter(key => allowedFields.includes(key) && updatedDetails[key] !== undefined && updatedDetails[key] !== null)
       .reduce((obj, key) => {
@@ -310,4 +309,41 @@ export const updateUserDetails = async (updatedDetails, token) => {
     console.error('Error updating user details:', error.message);
     throw new Error('Failed to update user details.');
   }
+};
+
+
+// Function to send transaction data to the database
+export const sendTransactionToDatabase = async (transactionData, token) => {
+  try {
+    const response = await api.post(
+      '/user/createTransaction',
+      {
+        data: transactionData, // Send only sanitized user details in the request body
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+        },
+      }
+    );
+
+    const receivedData = response.data; // Store the data from the response
+    return receivedData;
+  } catch (error) {
+    console.error('Error updating user details:', error.message);
+    throw new Error('Failed to update user details.');
+  }
+};
+
+
+export const fetchUserTransactions = async (email) => {
+  const token = localStorage.getItem("access_token"); // Get the token from local storage
+  const response = await api.post(
+    "/user/getUserTransactions",
+    { data: { email } },
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+  return response.data; // Return the response data
 };

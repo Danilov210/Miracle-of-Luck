@@ -64,7 +64,7 @@ const CreateClassicModel = ({ open, setOpen }) => {
                     autoClose: 3000, // Auto close after 3 seconds
                 });
 
-                setTimeout(() => window.location.reload(), 3000);
+                setTimeout(() => window.location.reload(), 1000);
             } else {
                 throw new Error("Unexpected response format from the server.");
             }

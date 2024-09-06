@@ -18,14 +18,10 @@ const Layout = () => {
     mutationKey: [user?.email],
     mutationFn: async ({ data, token }) => {
       const receivedData = await createUser(data, token); // Call createUser and wait for response
-      console.log("Received user data:", receivedData);
 
       if (receivedData && receivedData.user) {
-        // Format the date to display only day, month, and year
-        const formattedDateOfBirth = receivedData.user.DataOfBirth
-          ? new Date(receivedData.user.DataOfBirth).toLocaleDateString("en-GB")
-          : null;
-
+   
+   
         // Update user details context with all relevant fields
         setUserDetails((prev) => ({
           ...prev, // Keep other existing details intact
@@ -34,12 +30,13 @@ const Layout = () => {
           lastName: receivedData.user.lastName,
           fullName: receivedData.user.fullName,
           picture: receivedData.user.picture,
-          DataOfBirth: formattedDateOfBirth, // Use the formatted date
+          DataOfBirth: receivedData.user.DataOfBirth, // Use the formatted date
           balance: receivedData.user.balance,
         }));
       }
     },
   });
+
 
   useEffect(() => {
     const getTokenAndRegister = async () => {

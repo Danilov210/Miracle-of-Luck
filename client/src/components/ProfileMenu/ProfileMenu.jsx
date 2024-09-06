@@ -22,7 +22,6 @@ const ProfileMenu = ({ user, logout }) => {
     logout(); // Ensure logout is a valid function passed as a prop
     handleClose();
   };
-
   return (
     <>
       <IconButton onClick={handleClick} className="icon-button" style={{ display: 'flex', alignItems: 'center' }}>
@@ -58,6 +57,9 @@ const ProfileMenu = ({ user, logout }) => {
         </MenuItem>
         <MenuItem onClick={() => { handleClose(); navigate("/ownedtickets"); }}>
           My Tickets
+        </MenuItem>
+        <MenuItem onClick={() => { handleClose(); navigate("/Transactions"); }}>
+          My Transactions
         </MenuItem>
         <MenuItem onClick={handleLogout}>
           Logout
