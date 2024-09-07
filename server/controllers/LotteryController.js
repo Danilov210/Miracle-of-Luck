@@ -217,8 +217,11 @@ export const createLotteryClassic = asyncHandler(async (req, res) => {
 //++ Function to get all LotteriesLike
 export const getAllLotteriesLike = asyncHandler(async (req, res) => {
   try {
-    // Fetch all lotteries, ordered by the createdAt date in descending order
+    // Fetch all open lotteries, ordered by the createdAt date in descending order
     const lotteries = await prisma.lotteryLike.findMany({
+      where: {
+        lotteryStatus: 'Open', // Only fetch open lotteries
+      },
       orderBy: {
         createdAt: "desc",
       },
@@ -228,18 +231,21 @@ export const getAllLotteriesLike = asyncHandler(async (req, res) => {
     res.send(lotteries);
   } catch (err) {
     // Log the error message for debugging
-    console.error("Error fetching lotteries:", err.message);
+    console.error("Error fetching LotteriesLike:", err.message);
 
     // Send a 500 Internal Server Error response with the error message
-    res.status(500).send({ message: "Failed to fetch lotteries. Please try again." });
+    res.status(500).send({ message: "Failed to fetch LotteriesLike. Please try again." });
   }
 });
 
 //++ Function to get all LotteriesFundraising
 export const getAllLotteriesFundraising = asyncHandler(async (req, res) => {
   try {
-    // Fetch all lotteries, ordered by the createdAt date in descending order
+    // Fetch all open lotteries, ordered by the createdAt date in descending order
     const lotteries = await prisma.lotteryFundraising.findMany({
+      where: {
+        lotteryStatus: 'Open', // Only fetch open lotteries
+      },
       orderBy: {
         createdAt: "desc",
       },
@@ -249,18 +255,22 @@ export const getAllLotteriesFundraising = asyncHandler(async (req, res) => {
     res.send(lotteries);
   } catch (err) {
     // Log the error message for debugging
-    console.error("Error fetching lotteries:", err.message);
+    console.error("Error fetching LotteriesFundraising:", err.message);
 
     // Send a 500 Internal Server Error response with the error message
-    res.status(500).send({ message: "Failed to fetch lotteries. Please try again." });
+    res.status(500).send({ message: "Failed to fetch LotteriesFundraising. Please try again." });
   }
 });
+
 
 //++ Function to get all LotteriesFundraising
 export const getAllLotteriesClassic = asyncHandler(async (req, res) => {
   try {
-    // Fetch all lotteries, ordered by the createdAt date in descending order
+    // Fetch all open lotteries, ordered by the createdAt date in descending order
     const lotteries = await prisma.lotteryClassic.findMany({
+      where: {
+        lotteryStatus: 'Open', // Only fetch open lotteries
+      },
       orderBy: {
         createdAt: "desc",
       },
@@ -270,12 +280,13 @@ export const getAllLotteriesClassic = asyncHandler(async (req, res) => {
     res.send(lotteries);
   } catch (err) {
     // Log the error message for debugging
-    console.error("Error fetching Classic lotteries:", err.message);
+    console.error("Error fetching LotteriesClassic:", err.message);
 
     // Send a 500 Internal Server Error response with the error message
-    res.status(500).send({ message: "Failed to fetch Classic lotteries. Please try again." });
+    res.status(500).send({ message: "Failed to fetch LotteriesClassic. Please try again." });
   }
 });
+
 
 //++ Function to get a specific LotteryLike by ID
 export const getLotteryLike = asyncHandler(async (req, res) => {
@@ -360,33 +371,36 @@ export const getLotteryClassic = asyncHandler(async (req, res) => {
 
 
 
-/////////////////////
-// Function to get the number of tickets for a specific lottery
-export const getNumberOfTicketsForLottery = async (req, res) => {
-  console.log("alooo",req.body.data)
-  const { lotteryId } = req.body.data;
-
-
+// Controller function to fetch all tickets for a given lottery ID
+export const getAllTicketsForLottery = async (req, res) => {
   try {
-    // Find the lottery and include the associated tickets
-    const lottery = await prisma.lotteryFundraising.findUnique({
-      where: { id: lotteryId },
-      include: {
-        tickets: true, // Include all related tickets
+    const { id } = req.params; // Get lottery ID from the request parameters
+
+    // Check if the ID is provided
+    if (!id) {
+      return res.status(400).json({ message: 'Lottery ID is required.' });
+    }
+
+    // Fetch all tickets for the given lottery ID
+    const tickets = await prisma.ticket.findMany({
+      where: { lotteryId: id },
+      include: { 
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            fullName: true,
+            email: true
+          }
+        } 
       },
     });
 
-    // Check if the lottery exists
-    if (!lottery) {
-      return res.status(404).json({ message: "Lottery not found" });
-    }
-
-    // Return the number of tickets
-    const numberOfTickets = lottery.tickets.length;
-    return res.status(200).json({ numberOfTickets });
+    // Return the fetched tickets
+    res.status(200).json(tickets);
   } catch (error) {
-    console.error("Error fetching tickets:", error);
-    res.status(500).json({ message: "Error fetching tickets. Please try again." });
+    console.error("Error fetching tickets for lottery:", error);
+    res.status(500).json({ message: 'Failed to fetch tickets.', error });
   }
 };
-//////////////////////////////////////////////////////////////////

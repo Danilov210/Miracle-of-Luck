@@ -3,7 +3,7 @@
   --secondary: rgba(255, 255, 255, 0.78);
   --black: #000000;
   --green: #0bc94a;
-  --red:#de1c1c;
+  --red: #de1c1c;
   --blue-gradient: linear-gradient(97.05deg, #4066ff 3.76%, #2949c6 100%);
   --orange-gradient: linear-gradient(270deg, #f4bb86 0%, #db710e 100%);
   --blue: #4066ff;
@@ -102,6 +102,12 @@ a {
   font-size: 2rem;
 }
 
+.primaryTextYellow {
+  color: rgb(44, 55, 211);
+  font-weight: bold;
+  font-size: 2rem;
+}
+
 .IDNumber {
   color: rgb(98, 173, 88);
   font-weight: bold;
@@ -136,9 +142,11 @@ a {
 .button-blue {
   background-color: var(--blue);
 }
+
 .button-red {
   background-color: var(--red);
 }
+
 /* Button with sharp corners (no border radius) */
 .button-green {
   background-color: var(--green);
@@ -176,6 +184,11 @@ a {
 
   .placeNumber {
     font-size: 1.5rem;
+  }
+
+  .primaryTextYellow {
+    font-size: 1.5rem;
+
   }
 
   .IDNumber {

@@ -11,7 +11,8 @@ import {
   cancelLottery,
   updateUserProfile,
   createTransaction,
-  getUserTransactions
+  getUserTransactions,
+  
 } from "../controllers/userController.js";
 
 const router = express.Router();
@@ -27,5 +28,7 @@ router.post("/CancelLottery", cancelLottery);
 router.put("/updateUser", updateUserProfile);
 router.post("/createTransaction", createTransaction);
 router.post("/getUserTransactions", getUserTransactions);
+
+
 
 export { router as userRoute };

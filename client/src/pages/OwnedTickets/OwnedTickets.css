@@ -18,4 +18,10 @@
     justify-content: center; /* Center horizontally */
     align-items: center; /* Center vertically */
   }
-  
+    
+  .no-tickets-message {
+    color: #ff0000; /* Change to desired color */
+    font-size: 1.2rem; /* Adjust font size */
+    margin-top: 20px; /* Add some margin if needed */
+    text-align: center;
+  }

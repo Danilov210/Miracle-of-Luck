@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { useQuery, useMutation } from "react-query";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -11,14 +11,14 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { useLocation } from "react-router-dom";
 import { Box } from "@mui/material";
 import LotteryClassicTicketPurchase from "../../components/LotteryClassicTicketPurchase/LotteryClassicTicketPurchase";
+import UserDetailContext from "../../context/UserDetailContext";
 
 const LotteryClassic = () => {
-  const location = useLocation(); 
-  const { state } = location; 
-  const ticketId = state?.ticketId; 
-  const ticketNumbers = state?.ticketNumbers; 
+  const location = useLocation();
+  const { state } = location;
+  const ticketId = state?.ticketId;
+  const ticketNumbers = state?.ticketNumbers;
   const cancelLotteryOption = state?.cancelLotteryOption; // Check if cancelLotteryOption exists
-
   const navigate = useNavigate();
 
   const id = useLocation().pathname.split("/").pop();
@@ -26,11 +26,18 @@ const LotteryClassic = () => {
   const [ticketModalOpened, setTicketModalOpened] = useState(false);
   const { validateLogin } = useAuthCheck();
   const { user } = useAuth0();
+  const { setUserDetails } = useContext(UserDetailContext);
 
   // Mutation to handle ticket cancellation
   const cancelTicketMutation = useMutation({
     mutationFn: () => CancelUserTicket(ticketId),
     onSuccess: (response) => {
+      // Update user details context with all relevant fields
+      setUserDetails((prev) => ({
+        ...prev, // Keep other existing details intact
+        balance: response.data.balance,
+      }));
+
       if (response?.data?.message) {
         toast.success(response.data.message, {
           position: "bottom-right",
@@ -51,8 +58,14 @@ const LotteryClassic = () => {
 
   // Mutation to handle lottery cancellation
   const cancelLotteryMutation = useMutation({
-    mutationFn: () => CancelLottery(id, "Classic"), // Pass the lottery ID and type to the cancellation function
+    mutationFn: () => CancelLottery(user?.email, id, "Classic"), // Pass the lottery ID and type to the cancellation function
     onSuccess: (response) => {
+      // Update user details context with all relevant fields
+      setUserDetails((prev) => ({
+        ...prev, // Keep other existing details intact
+        balance: response.data.balance,
+      }));
+
       if (response?.data?.message) {
         toast.success(response.data.message, {
           position: "bottom-right",
@@ -112,7 +125,7 @@ const LotteryClassic = () => {
                   className={`button ${ticketId ? 'button-red' : 'button-green'}`}
                   onClick={() => {
                     if (ticketId) {
-                      cancelTicketMutation.mutate(); 
+                      cancelTicketMutation.mutate();
                     } else {
                       if (validateLogin()) {
                         setTicketModalOpened(true);

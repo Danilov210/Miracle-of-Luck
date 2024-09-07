@@ -38,9 +38,15 @@ const LotteriesFundraising = () => {
       <div className="flexColCenter paddings innerWidth lottery-container">
         <SearchBar filter={filter} setFilter={setFilter} />
         <div className="paddings flexCenter lottery">
-          {filteredData.map((card, i) => (
-            <LotteryFundraisingCard card={card} key={i} />
-          ))}
+          {filteredData.length > 0 ? (
+            filteredData.map((card, i) => (
+              <LotteryFundraisingCard card={card} key={i} />
+            ))
+          ) : (
+            <div className="no-lotteries-message">
+              No available lotteries exist.
+            </div>
+          )}
         </div>
       </div>
     </div>

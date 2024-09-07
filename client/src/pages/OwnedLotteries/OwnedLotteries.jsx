@@ -14,6 +14,7 @@ const OwnedLotteries = () => {
   const navigate = useNavigate();
   const [ownedLotteries, setOwnedLotteries] = useState([]);
   const [filter, setFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("active"); // State for filtering by status
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
 
@@ -56,9 +57,10 @@ const OwnedLotteries = () => {
   // Check if there are no lotteries
   const noLotteries = ownedLotteriesLike.length === 0 && ownedLotteriesFundraising.length === 0 && ownedLotteriesClassic.length === 0;
 
-  // Function to filter lotteries based on search term
+  // Function to filter lotteries based on search term and status
   const filterLotteries = (lotteries) =>
     lotteries.filter((lottery) =>
+      (statusFilter === "active" ? lottery.lotteryStatus === "Open" : lottery.lotteryStatus !== "Open") &&
       ["title", "description", "hosted", "paticipationdescription"].some((key) =>
         String(lottery[key])?.toLowerCase().includes(filter.toLowerCase())
       )
@@ -78,6 +80,22 @@ const OwnedLotteries = () => {
     <div className="wrapper">
       <div className="flexColCenter paddings innerWidth lottery-container">
         <SearchBar filter={filter} setFilter={setFilter} />
+
+        {/* Filter for Active or Passed Lotteries with improved design */}
+        <div className="lottery-filter">
+          <button
+            className={`filter-button ${statusFilter === "active" ? "active" : ""}`}
+            onClick={() => setStatusFilter("active")}
+          >
+            Active Lotteries
+          </button>
+          <button
+            className={`filter-button ${statusFilter === "passed" ? "active" : ""}`}
+            onClick={() => setStatusFilter("passed")}
+          >
+            Past Lotteries
+          </button>
+        </div>
 
         {/* Show message if user has no lotteries */}
         {noLotteries && (

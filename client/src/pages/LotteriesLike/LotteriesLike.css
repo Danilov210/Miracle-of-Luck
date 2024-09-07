@@ -17,3 +17,10 @@
 .lottery-container .search-bar input{
   width: 70%;
 }
+
+.no-lotteries-message {
+  color: #ff0000; /* Change to desired color */
+  font-size: 1.2rem; /* Adjust font size */
+  margin-top: 20px; /* Add some margin if needed */
+  text-align: center;
+}

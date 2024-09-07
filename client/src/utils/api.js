@@ -263,10 +263,10 @@ export const CancelUserTicket = async (ticketId) => {
 
 
 
-export const CancelLottery = async (lotteryId, lotteryType) => {
+export const CancelLottery = async (email,lotteryId, lotteryType) => {
   try {
     const response = await api.post('/user/CancelLottery', {
-      data: { lotteryId, lotteryType }, // Send both lotteryId and lotteryType
+      data: {email, lotteryId, lotteryType }, // Send both lotteryId and lotteryType
     });
     return response;
   } catch (error) {
@@ -287,7 +287,6 @@ export const updateUserDetails = async (updatedDetails, token) => {
         return obj;
       }, {});
 
-    console.log('Sanitized details to update:', sanitizedDetails);
 
     // Send the sanitized user details to the server
     const response = await api.put(
@@ -303,7 +302,6 @@ export const updateUserDetails = async (updatedDetails, token) => {
     );
 
     const receivedData = response.data; // Store the data from the response
-    console.log('Response:', receivedData);
     return receivedData;
   } catch (error) {
     console.error('Error updating user details:', error.message);
@@ -345,5 +343,12 @@ export const fetchUserTransactions = async (email) => {
       headers: { Authorization: `Bearer ${token}` },
     }
   );
+  return response.data; // Return the response data
+};
+export const getAllTicketsForLottery = async (lotteryId) => {
+  const token = localStorage.getItem("access_token"); // Get the token from local storage
+  const response = await api.get(`/lotteries/Alltickets/${lotteryId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
   return response.data; // Return the response data
 };

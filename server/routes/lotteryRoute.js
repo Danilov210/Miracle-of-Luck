@@ -10,11 +10,10 @@ import {
   getLotteryLike,
   getLotteryFundraising,
   getLotteryClassic,
-  getNumberOfTicketsForLottery,
+  getAllTicketsForLottery
 } from "../controllers/LotteryController.js";
 
 const router = express.Router();
-router.post("/numberoftickets", getNumberOfTicketsForLottery);
 router.post("/createLike", createLotteryLike);
 router.post("/createFundraising", createLotteryFundraising);
 router.post("/createClassic", createLotteryClassic);
@@ -24,5 +23,5 @@ router.get("/alllotteryclassic", getAllLotteriesClassic);
 router.get("/LotteryLike/:id", getLotteryLike);
 router.get("/LotteryFundraising/:id", getLotteryFundraising);
 router.get("/LotteryClassic/:id", getLotteryClassic);
-
+router.get("/Alltickets/:id", getAllTicketsForLottery);
 export { router as lotteryRoute };

@@ -29,7 +29,7 @@ const Layout = () => {
           firstName: receivedData.user.firstName,
           lastName: receivedData.user.lastName,
           fullName: receivedData.user.fullName,
-          picture: receivedData.user.picture,
+          picture: receivedData.user.picture ? receivedData.user.picture : user?.picture, // Check for null or undefined
           DataOfBirth: receivedData.user.DataOfBirth, // Use the formatted date
           balance: receivedData.user.balance,
         }));

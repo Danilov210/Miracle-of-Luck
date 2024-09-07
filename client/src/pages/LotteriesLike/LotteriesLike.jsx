@@ -3,7 +3,7 @@ import SearchBar from "../../components/SearchBar/SearchBar";
 import "./LotteriesLike.css";
 import useLotteriesLike from "../../hooks/useLotteries";
 import { PuffLoader } from "react-spinners";
-import LotteryLikeCard from "../../components/LotteryLikeCard/LotteryLikeCard"
+import LotteryLikeCard from "../../components/LotteryLikeCard/LotteryLikeCard";
 
 const LotteriesLike = () => {
   const { data, isError, isLoading } = useLotteriesLike();
@@ -38,9 +38,15 @@ const LotteriesLike = () => {
       <div className="flexColCenter paddings innerWidth lottery-container">
         <SearchBar filter={filter} setFilter={setFilter} />
         <div className="paddings flexCenter lottery">
-          {filteredData.map((card, i) => (
-            <LotteryLikeCard card={card} key={i} />
-          ))}
+          {filteredData.length > 0 ? (
+            filteredData.map((card, i) => (
+              <LotteryLikeCard card={card} key={i} />
+            ))
+          ) : (
+            <div className="no-lotteries-message">
+              No available lotteries exist.
+            </div>
+          )}
         </div>
       </div>
     </div>

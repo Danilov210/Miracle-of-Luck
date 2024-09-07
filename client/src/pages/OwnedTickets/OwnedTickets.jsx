@@ -73,7 +73,7 @@ const OwnedTickets = () => {
 
         {/* Show message if user has no tickets */}
         {noTickets && (
-          <div className="primaryText">
+          <div className="no-tickets-message">
             <h3>You have not purchased any tickets yet.</h3>
           </div>
         )}
