@@ -14,6 +14,7 @@ const OwnedTickets = () => {
   const [tickets, setTickets] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("Active");
 
   useEffect(() => {
     const fetchOwnedTickets = async () => {
@@ -49,36 +50,87 @@ const OwnedTickets = () => {
     );
   }
 
-  // Separate tickets by type
-  const ticketsFundraising = tickets.filter(ticket => ticket.lotteryType === "Fundraising");
-  const ticketsClassic = tickets.filter(ticket => ticket.lotteryType === "Classic");
-  const ticketsLike = tickets.filter(ticket => ticket.lotteryType === "Like");
+  const filterTickets = (tickets, status) => {
+    return tickets.filter((ticket) => {
+      if (status === "Active") return ticket.status === "Active";
+      if (status === "Ended") return ticket.status === "Ended";
+      if (status === "Won") return ticket.status === "Won";
+      return true;
+    });
+  };
 
-  // Function to handle navigation
+  const ticketsFundraising = filterTickets(tickets, statusFilter).filter(
+    (ticket) => ticket.lotteryType === "Fundraising"
+  );
+  const ticketsClassic = filterTickets(tickets, statusFilter).filter(
+    (ticket) => ticket.lotteryType === "Classic"
+  );
+  const ticketsLike = filterTickets(tickets, statusFilter).filter(
+    (ticket) => ticket.lotteryType === "Like"
+  );
+
   const handleTicketClick = (ticket) => {
     const state = {
       from: "/ownedtickets",
+      ticketNumber: ticket.ticketNumber, 
       ticketId: ticket.id,
-      ticketNumbers: ticket.numbers || null // Pass ticketNumbers if they exist
+      ticketNumbers: ticket.numbers || null,
     };
     navigate(`/ownedtickets/${ticket.lotteryType}/${ticket.lotteryId}`, { state });
   };
 
-  // Check if there are no tickets
-  const noTickets = ticketsFundraising.length === 0 && ticketsClassic.length === 0 && ticketsLike.length === 0;
+  const noTickets =
+    ticketsFundraising.length === 0 &&
+    ticketsClassic.length === 0 &&
+    ticketsLike.length === 0;
+
+  // Function to format the ticket number into multiple lines
+  const formatTicketNumber = (ticketNumber) => {
+    const parts = ticketNumber.split("-");
+    if (parts.length === 0) return ticketNumber;
+    return (
+      <>
+        {parts.map((part, index) => (
+          <span key={index}>
+            {part}
+            {index < parts.length - 1 ? "-" : ""}
+            <br />
+          </span>
+        ))}
+      </>
+    );
+  };
 
   return (
     <div className="wrapper">
       <div className="flexColCenter paddings innerWidth ticket-container">
+        <div className="ticket-filter">
+          <button
+            className={`filter-button ${statusFilter === "Active" ? "active" : ""}`}
+            onClick={() => setStatusFilter("Active")}
+          >
+            Active Tickets
+          </button>
+          <button
+            className={`filter-button ${statusFilter === "Ended" ? "active" : ""}`}
+            onClick={() => setStatusFilter("Ended")}
+          >
+            Ended Tickets
+          </button>
+          <button
+            className={`filter-button ${statusFilter === "Won" ? "active" : ""}`}
+            onClick={() => setStatusFilter("Won")}
+          >
+            Won Tickets
+          </button>
+        </div>
 
-        {/* Show message if user has no tickets */}
         {noTickets && (
           <div className="no-tickets-message">
             <h3>You have not purchased any tickets yet.</h3>
           </div>
         )}
 
-        {/* Fundraising Tickets */}
         {ticketsFundraising.length > 0 && (
           <div className="ticket-section">
             <h3>Fundraising Tickets</h3>
@@ -86,14 +138,15 @@ const OwnedTickets = () => {
               {ticketsFundraising.map((ticket, i) => (
                 <div key={i} onClick={() => handleTicketClick(ticket)}>
                   <LotteryFundraisingCard card={ticket.lotteryFundraising} />
-                  <div className="ticket-id">Ticket ID: {ticket.id}</div>
+                  <div className="ticket-number">
+                    {formatTicketNumber(ticket.ticketNumber)}
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Classic Tickets */}
         {ticketsClassic.length > 0 && (
           <div className="ticket-section">
             <h3>Classic Tickets</h3>
@@ -101,14 +154,15 @@ const OwnedTickets = () => {
               {ticketsClassic.map((ticket, i) => (
                 <div key={i} onClick={() => handleTicketClick(ticket)}>
                   <LotteryClassicCard card={ticket.lotteryClassic} />
-                  <div className="ticket-id">Ticket ID: {ticket.id}</div>
+                  <div className="ticket-number">
+                    {formatTicketNumber(ticket.ticketNumber)}
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Like Tickets */}
         {ticketsLike.length > 0 && (
           <div className="ticket-section">
             <h3>Like Tickets</h3>
@@ -116,7 +170,9 @@ const OwnedTickets = () => {
               {ticketsLike.map((ticket, i) => (
                 <div key={i} onClick={() => handleTicketClick(ticket)}>
                   <LotteryLikeCard card={ticket.lotteryLike} />
-                  <div className="ticket-id">Ticket ID: {ticket.id}</div>
+                  <div className="ticket-number">
+                    {formatTicketNumber(ticket.ticketNumber)}
+                  </div>
                 </div>
               ))}
             </div>

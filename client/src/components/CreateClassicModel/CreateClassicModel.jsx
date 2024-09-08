@@ -54,6 +54,9 @@ const CreateClassicModel = ({ open, setOpen }) => {
     const handleFinish = async () => {
         try {
             const token = await getAccessTokenSilently();
+            
+            
+            
             const endDate = lotteryDetails.endDate ? new Date(lotteryDetails.endDate).toISOString() : null;
             const payload = { ...lotteryDetails, endDate };
 

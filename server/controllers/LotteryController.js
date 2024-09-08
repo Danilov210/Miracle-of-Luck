@@ -1,4 +1,6 @@
 import asyncHandler from "express-async-handler";
+import { scheduleLotteryDraw } from './drawController.js'; // Adjust the path as necessary
+
 import { prisma } from "../config/prismaConfig.js";
 
 //++ Function to create a new LotteryLike entry in the database
@@ -81,7 +83,7 @@ export const createLotteryLike = asyncHandler(async (req, res) => {
 });
 
 
-//++ Function to create a new LotteryFundraising entry in the database
+// Function to create a new LotteryFundraising entry in the database
 export const createLotteryFundraising = asyncHandler(async (req, res) => {
   const {
     hosted,
@@ -92,8 +94,16 @@ export const createLotteryFundraising = asyncHandler(async (req, res) => {
     image,
     price,
     prizes,
-    userEmail, // Use userEmail from the request body
+    userEmail,
   } = req.body.data;
+
+  // Validate the endDate format and convert it if necessary
+  const formattedEndDate = new Date(endDate);
+
+  if (isNaN(formattedEndDate.getTime())) {
+    console.error("Invalid endDate format:", endDate);
+    return res.status(400).json({ message: "Invalid endDate format. Please provide a full date and time." });
+  }
 
   try {
     // Create a new LotteryFundraising entry
@@ -104,46 +114,55 @@ export const createLotteryFundraising = asyncHandler(async (req, res) => {
         description,
         paticipationdescription,
         startDate: new Date(),
-        endDate,
+        endDate: formattedEndDate.toISOString(),
         image,
         price,
         prizes: prizes || [],
         owner: {
-          connect: { email: userEmail }, // Correctly use userEmail to connect the owner
+          connect: { email: userEmail },
         },
       },
     });
 
     // Update the user's ownedLotteriesFundraising array with the new lottery ID
     await prisma.user.update({
-      where: { email: userEmail }, // Correctly use userEmail
+      where: { email: userEmail },
       data: {
         ownedLotteriesFundraising: {
-          connect: { id: lotteryFundraising.id }, // Connect the new lottery ID to the user's ownedLotteriesFundraising
+          connect: { id: lotteryFundraising.id },
         },
       },
     });
 
-    // Fetch and send back the updated user data
     const updatedUser = await prisma.user.findUnique({
-      where: { email: userEmail }, // Correctly use userEmail
-      include: { ownedLotteriesFundraising: true }, // Include ownedLotteriesFundraising in the response
+      where: { email: userEmail },
+      include: { ownedLotteriesFundraising: true },
     });
 
-    // Send the response
     console.log("LotteryFundraising created successfully.");
+
+    // Check if the lottery end date is today
+    const today = new Date();
+    if (
+      formattedEndDate.getDate() === today.getDate() &&
+      formattedEndDate.getMonth() === today.getMonth() &&
+      formattedEndDate.getFullYear() === today.getFullYear()
+    ) {
+      // If the lottery is for today, schedule it
+      const drawTime = formattedEndDate.toISOString(); // Use full ISO format
+      scheduleLotteryDraw({ id: lotteryFundraising.id, drawTime, lotteryType: 'Fundraising' });
+    }
+
     return res.status(201).json({
       message: "LotteryFundraising created successfully.",
-      updatedUser, // Include updated user in the response
+      updatedUser,
     });
   } catch (err) {
-    // Log and send a generic error message
     console.error("Error creating LotteryFundraising:", err.message);
-    return res
-      .status(500)
-      .send({ message: "Failed to create LotteryFundraising. Please try again." });
+    return res.status(500).send({ message: "Failed to create LotteryFundraising. Please try again." });
   }
 });
+
 
 //++ Function to create a new LotteryFundraising entry in the database
 export const createLotteryClassic = asyncHandler(async (req, res) => {
@@ -243,9 +262,7 @@ export const getAllLotteriesFundraising = asyncHandler(async (req, res) => {
   try {
     // Fetch all open lotteries, ordered by the createdAt date in descending order
     const lotteries = await prisma.lotteryFundraising.findMany({
-      where: {
-        lotteryStatus: 'Open', // Only fetch open lotteries
-      },
+  
       orderBy: {
         createdAt: "desc",
       },

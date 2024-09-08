@@ -122,10 +122,10 @@ const CreateLotteryLike = ({ open, setOpen }) => {
     const handleFinish = async () => {
         try {
             const token = await getAccessTokenSilently();
+            
             const endDate = lotteryDetails.endDate ? new Date(lotteryDetails.endDate).toISOString() : null;
-            const startDate = new Date().toISOString();
 
-            const payload = { ...lotteryDetails, startDate, endDate };
+            const payload = { ...lotteryDetails, endDate };
 
             const response = await createLotteryLike(payload, token);
 

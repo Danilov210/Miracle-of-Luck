@@ -1,12 +1,17 @@
 import cron from 'node-cron';
 import { prisma } from "../config/prismaConfig.js";
 
-const scheduledJobs = new Map(); // To keep track of scheduled jobs
+ const scheduledJobs = new Map(); // To keep track of scheduled jobs
 
 // Function to convert draw time to cron format
 const convertToCronTime = (drawTime) => {
-  const [hour, minute] = drawTime.split(':');
-  return `${minute} ${hour} * * *`;
+  const date = new Date(drawTime);
+  const minute = date.getMinutes();
+  const hour = date.getHours();
+  const day = date.getDate();
+  const month = date.getMonth() + 1;
+
+  return `${minute} ${hour} ${day} ${month} *`;
 };
 
 // Controller function to schedule a new lottery draw
@@ -27,9 +32,15 @@ export const scheduleDraw = async (req, res) => {
 
     console.log("Fetched lottery data:", lottery);
 
-    const drawTime = new Date(lottery.endDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    // Ensure endDate is a full date-time string
+    const drawTime = new Date(lottery.endDate);
 
-    scheduleLotteryDraw({ id, drawTime, lotteryType });
+    if (isNaN(drawTime.getTime())) {
+      console.error(`Invalid endDate format for lottery ID ${id}:`, lottery.endDate);
+      return res.status(400).json({ message: 'Invalid endDate format. Please provide a full date and time.' });
+    }
+
+    scheduleLotteryDraw({ id, drawTime: drawTime.toISOString(), lotteryType });
 
     res.status(200).json({ message: 'Lottery draw scheduled successfully.' });
   } catch (error) {
@@ -37,6 +48,7 @@ export const scheduleDraw = async (req, res) => {
     res.status(500).json({ message: 'Failed to schedule lottery draw.', error });
   }
 };
+
 
 // Function to fetch lottery details and type
 const fetchLotteryDetails = async (id) => {
@@ -58,9 +70,24 @@ const fetchLotteryDetails = async (id) => {
   return { lottery: null, lotteryType: null };
 };
 
-// Function to schedule a lottery draw
-const scheduleLotteryDraw = ({ id, drawTime, lotteryType }) => {
-  const cronTime = convertToCronTime(drawTime);
+export const scheduleLotteryDraw = ({ id, drawTime, lotteryType }) => {  // Parse the full end date from the drawTime
+  const endDate = new Date(drawTime); // Assuming drawTime is passed as a full ISO string
+
+  // Check if endDate is valid
+  if (isNaN(endDate.getTime())) {
+    console.error(`Invalid draw time for lottery ID ${id}. Please check the endDate value:`, drawTime);
+    return; // Exit if the date is invalid
+  }
+
+  // Adjust the cron time to the server's local timezone
+  const localDate = new Date(endDate);
+  const minutes = localDate.getMinutes();
+  const hours = localDate.getHours();
+  const day = localDate.getDate();
+  const month = localDate.getMonth() + 1;
+
+  // Create a cron time string in the local timezone
+  const cronTime = `${minutes} ${hours} ${day} ${month} *`;
 
   if (scheduledJobs.has(id)) {
     const existingJob = scheduledJobs.get(id);
@@ -73,7 +100,7 @@ const scheduleLotteryDraw = ({ id, drawTime, lotteryType }) => {
     const winners = await performLotteryDraw(id, lotteryType);
 
     if (winners && winners.length > 0) {
-      winners.forEach(winner => {
+      winners.forEach((winner) => {
         console.log(`The winner is ${winner.name} for lottery ID ${id} in place ${winner.place}`);
       });
     } else {
@@ -89,7 +116,70 @@ const scheduleLotteryDraw = ({ id, drawTime, lotteryType }) => {
   });
 
   scheduledJobs.set(id, job);
-  console.log(`Scheduled lottery ID ${id} to run at ${drawTime}`);
+
+  // Log formatted date and time
+  const formattedDate = localDate.toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
+  const formattedTime = localDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+  console.log(`Scheduled lottery:
+    - ID: ${id}
+    - Type: ${lotteryType}
+    - Draw Date: ${formattedDate}
+    - Draw Time: ${formattedTime}
+    - Cron Time: ${cronTime}`);
+};
+
+// Function to initialize scheduled draws
+// Function to initialize scheduled draws
+export const initializeScheduledDraws = async () => {
+  try {
+    // Fetch all active lotteries with end dates in the future
+    const lotteries = await prisma.lotteryLike.findMany({
+      where: { lotteryStatus: 'Open', endDate: { gt: new Date() } },
+      select: { id: true, endDate: true },
+    });
+
+    const fundraisingLotteries = await prisma.lotteryFundraising.findMany({
+      where: { lotteryStatus: 'Open', endDate: { gt: new Date() } },
+      select: { id: true, endDate: true },
+    });
+
+    const classicLotteries = await prisma.lotteryClassic.findMany({
+      where: { lotteryStatus: 'Open', endDate: { gt: new Date() } },
+      select: { id: true, endDate: true },
+    });
+
+    // Combine all lotteries and filter those scheduled for today
+    const allLotteries = [
+      ...lotteries.map(lottery => ({ ...lottery, type: 'Like' })),
+      ...fundraisingLotteries.map(lottery => ({ ...lottery, type: 'Fundraising' })),
+      ...classicLotteries.map(lottery => ({ ...lottery, type: 'Classic' })),
+    ];
+
+    // Filter lotteries that are scheduled for today
+    const today = new Date();
+    const lotteriesForToday = allLotteries.filter(lottery => {
+      const endDate = new Date(lottery.endDate);
+      return (
+        endDate.getDate() === today.getDate() &&
+        endDate.getMonth() === today.getMonth() &&
+        endDate.getFullYear() === today.getFullYear()
+      );
+    });
+
+    // Schedule each lottery draw for today
+    if (lotteriesForToday.length > 0) {
+      for (const lottery of lotteriesForToday) {
+        const drawTime = new Date(lottery.endDate).toISOString(); // Use the full ISO string format
+        scheduleLotteryDraw({ id: lottery.id, drawTime, lotteryType: lottery.type });
+      }
+      console.log(`Scheduled ${lotteriesForToday.length} lotteries to run today.`);
+    } else {
+      console.log('No lotteries scheduled for today.');
+    }
+  } catch (error) {
+    console.error('Error initializing scheduled draws:', error);
+  }
 };
 
 // Function to update lottery status to 'Closed'
@@ -219,8 +309,6 @@ const fetchParticipantsFromDatabase = async (lotteryId) => {
   }
 };
 
-
-
 // Function to update ticket statuses based on the draw result
 const updateTicketStatuses = async (lotteryId, winners) => {
   try {
@@ -299,3 +387,5 @@ export const fetchAndReturnLotteries = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch lotteries.', error });
   }
 };
+
+export { scheduledJobs };

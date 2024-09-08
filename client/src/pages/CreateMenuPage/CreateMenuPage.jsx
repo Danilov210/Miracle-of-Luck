@@ -17,7 +17,7 @@ const CreateMenuPage = () => {
   const [classicModalOpened, setClassicModalOpened] = useState(false); // State to manage the second modal visibility
 
   const { validateLogin } = useAuthCheck();
-  
+
   // Function to handle card click event
   const handleCardClick = (index) => {
 
@@ -47,7 +47,6 @@ const CreateMenuPage = () => {
       <div className="wrapper paddings innerWidth r-container">
         <div className="r-head flexColCenter">
           <span className="orangeText">Create Lottery</span>
-          <span className="primaryText">Popular Lotteries</span>
         </div>
         <Swiper {...sliderSetting}>
           <SliderButton />

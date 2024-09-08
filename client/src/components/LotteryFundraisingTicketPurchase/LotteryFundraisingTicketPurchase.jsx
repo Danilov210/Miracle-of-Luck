@@ -2,7 +2,6 @@ import React, { useContext, useState } from "react";
 import { Dialog, DialogTitle, DialogContent, Button, TextField, Typography, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { toast } from "react-toastify";
-import dayjs from "dayjs";
 import { useMutation } from "react-query";
 import UserDetailContext from "../../context/UserDetailContext.js";
 import { BuyTicketFundraising } from "../../utils/api.js";
@@ -53,6 +52,11 @@ const LotteryClassicTicketPurchase = ({ opened, setOpened, lotteryId, email, tic
     onSettled: () => setOpened(false),
   });
 
+  const handleTicketNumberChange = (e) => {
+    const value = Math.max(1, Math.min(10, parseInt(e.target.value) || 1)); // Limit between 1 and 10
+    setTicketNumber(value);
+  };
+
   return (
     <Dialog
       open={opened}
@@ -72,11 +76,11 @@ const LotteryClassicTicketPurchase = ({ opened, setOpened, lotteryId, email, tic
         <div className="flexColCenter" style={{ gap: "1rem", minWidth: "300px" }}>
           <Typography variant="h6">Your Balance: {balance} USD</Typography>
           <TextField
-            label="Number of Tickets"
+            label="Number of Tickets (Max 10 per purchase)"
             type="number"
             value={ticketNumber}
-            onChange={(e) => setTicketNumber(Math.max(1, parseInt(e.target.value) || 1))}
-            inputProps={{ min: 1 }}
+            onChange={handleTicketNumberChange}
+            inputProps={{ min: 1, max: 10 }} // Limit the input to a minimum of 1 and a maximum of 10
             fullWidth
           />
           <Typography variant="h6">Total Price: {totalPrice} USD</Typography>

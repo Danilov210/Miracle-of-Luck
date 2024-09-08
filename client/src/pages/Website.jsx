@@ -4,7 +4,7 @@ import Contact from "../components/Contact/Contact";
 import GetStarted from "../components/GetStarted/GetStarted";
 import Hero from "../components/Hero/Hero";
 import LotteriesMenuPage from "../pages/LotteriesMenuPage/LotteriesMenuPage";
-import Results from "../components/Results/Results";
+import ResultsMenuPage from "../pages/ResultsMenuPage/ResultsMenuPage";
 
 const Website = () => {
   const resultsRef = useRef(null);
@@ -16,7 +16,7 @@ const Website = () => {
         <Hero />
       </div>
       <LotteriesMenuPage />
-      <Results />
+      <ResultsMenuPage />
       <CreateMenuPage />
       <Contact />
       <GetStarted />

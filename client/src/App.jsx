@@ -64,7 +64,18 @@ function App() {
                   </Route>
                   <Route path="/results">
                     <Route index element={<ResultsMenuPage />} />
-                    <Route path=":resultId" element={<ResultsMenuPage />} />
+                    <Route path="LotteryLike">
+                      <Route index element={<LotteriesLike />} />
+                      <Route path=":lotteryId" element={<LotteryLike />} />
+                    </Route>
+                    <Route path="LotteryFundraising">
+                      <Route index element={<LotteriesFundraising />} />
+                      <Route path=":lotteryId" element={<LotteryFundraising />} />
+                    </Route>
+                    <Route path="LotteryClassic">
+                      <Route index element={<LotteriesClassic />} />
+                      <Route path=":lotteryId" element={<LotteryClassic />} />
+                    </Route>
                   </Route>
                   <Route path="/create">
                     <Route index element={<CreateMenuPage />} />
