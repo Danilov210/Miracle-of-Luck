@@ -165,6 +165,7 @@ export const createLotteryFundraising = asyncHandler(async (req, res) => {
 
 
 //++ Function to create a new LotteryFundraising entry in the database
+// Function to create a new LotteryClassic entry in the database
 export const createLotteryClassic = asyncHandler(async (req, res) => {
   const {
     hosted,
@@ -180,8 +181,16 @@ export const createLotteryClassic = asyncHandler(async (req, res) => {
     userEmail, // Use userEmail from the request body
   } = req.body.data;
 
+  // Validate the endDate format and convert it if necessary
+  const formattedEndDate = new Date(endDate);
+
+  if (isNaN(formattedEndDate.getTime())) {
+    console.error("Invalid endDate format:", endDate);
+    return res.status(400).json({ message: "Invalid endDate format. Please provide a full date and time." });
+  }
+
   try {
-    // Create a new LotteryFundraising entry
+    // Create a new LotteryClassic entry
     const lotteryClassic = await prisma.lotteryClassic.create({
       data: {
         hosted,
@@ -190,7 +199,7 @@ export const createLotteryClassic = asyncHandler(async (req, res) => {
         image,
         paticipationdescription,
         startDate: new Date(),
-        endDate,
+        endDate: formattedEndDate.toISOString(), // Use the ISO string format for endDate
         availableNumberRange,
         drawnNumbersCount,
         price,
@@ -201,12 +210,12 @@ export const createLotteryClassic = asyncHandler(async (req, res) => {
       },
     });
 
-    // Update the user's ownedLotteriesFundraising array with the new lottery ID
+    // Update the user's ownedLotteriesClassic array with the new lottery ID
     await prisma.user.update({
       where: { email: userEmail }, // Correctly use userEmail
       data: {
         ownedLotteriesClassic: {
-          connect: { id: lotteryClassic.id }, // Connect the new lottery ID to the user's ownedLotteriesFundraising
+          connect: { id: lotteryClassic.id }, // Connect the new lottery ID to the user's ownedLotteriesClassic
         },
       },
     });
@@ -214,23 +223,34 @@ export const createLotteryClassic = asyncHandler(async (req, res) => {
     // Fetch and send back the updated user data
     const updatedUser = await prisma.user.findUnique({
       where: { email: userEmail }, // Correctly use userEmail
-      include: { ownedLotteriesClassic: true }, // Include ownedLotteriesFundraising in the response
+      include: { ownedLotteriesClassic: true }, // Include ownedLotteriesClassic in the response
     });
 
-    // Send the response
     console.log("LotteryClassic created successfully.");
+
+    // Check if the lottery end date is today
+    const today = new Date();
+    if (
+      formattedEndDate.getDate() === today.getDate() &&
+      formattedEndDate.getMonth() === today.getMonth() &&
+      formattedEndDate.getFullYear() === today.getFullYear()
+    ) {
+      // If the lottery is for today, schedule it
+      const drawTime = formattedEndDate.toISOString(); // Use full ISO format
+      scheduleLotteryDraw({ id: lotteryClassic.id, drawTime, lotteryType: 'Classic' });
+    }
+
+    // Send the response
     return res.status(201).json({
       message: "LotteryClassic created successfully.",
       updatedUser, // Include updated user in the response
     });
   } catch (err) {
-    // Log and send a generic error message
     console.error("Error creating LotteryClassic:", err.message);
-    return res
-      .status(500)
-      .send({ message: "Failed to create LotteryClassic. Please try again." });
+    return res.status(500).send({ message: "Failed to create LotteryClassic. Please try again." });
   }
 });
+
 
 
 //++ Function to get all LotteriesLike
@@ -415,9 +435,9 @@ export const getAllTicketsForLottery = async (req, res) => {
     });
 
     // Return the fetched tickets
-    res.status(200).json(tickets);
+    res.status(200).send(tickets);
   } catch (error) {
     console.error("Error fetching tickets for lottery:", error);
-    res.status(500).json({ message: 'Failed to fetch tickets.', error });
+    res.status(500).send({ message: 'Failed to fetch tickets.', error });
   }
 };

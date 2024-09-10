@@ -1,23 +1,154 @@
 import cron from 'node-cron';
 import { prisma } from "../config/prismaConfig.js";
 
- const scheduledJobs = new Map(); // To keep track of scheduled jobs
+const scheduledJobs = new Map(); // To keep track of scheduled jobs
 
-// Function to convert draw time to cron format
-const convertToCronTime = (drawTime) => {
-  const date = new Date(drawTime);
-  const minute = date.getMinutes();
-  const hour = date.getHours();
-  const day = date.getDate();
-  const month = date.getMonth() + 1;
-
-  return `${minute} ${hour} ${day} ${month} *`;
+// Function to generate unique random numbers for classic lottery
+const generateUniqueRandomNumbers = (count, range) => {
+  const numbers = new Set();
+  while (numbers.size < count) {
+    numbers.add(Math.floor(Math.random() * range) + 1);
+  }
+  return Array.from(numbers);
 };
+
+// Function to determine winners for the classic lottery
+const determineClassicLotteryWinners = (tickets, winningNumbers, prizes) => {
+  const winners = [];
+
+  // Log the input data for debugging
+  console.log("Fetched prizes:", prizes);
+  console.log("Fetched tickets:", tickets);
+  console.log("Drawing numbers:", winningNumbers);
+
+  // Calculate the minimum number of matching numbers required to win a prize
+  const requiredMatchingCountForPrize = winningNumbers.length - prizes.length;
+
+  // Ensure all tickets have the 'numbers' property defined correctly
+  const sortedTickets = tickets.map(ticket => {
+    const ticketNumbers = Array.isArray(ticket.numbers) ? ticket.numbers : [];
+
+    // Calculate how many numbers match with the winning numbers
+    const matchingCount = ticketNumbers.reduce((count, number) => {
+      if (winningNumbers.includes(number)) {
+        return count + 1;
+      }
+      return count;
+    }, 0);
+
+    console.log(`Ticket ID: ${ticket.id}, Numbers: ${ticketNumbers}, Matching Count: ${matchingCount}`);
+
+    return { ...ticket, matchingCount };
+  }).sort((a, b) => b.matchingCount - a.matchingCount); // Sort by the number of matching numbers in descending order
+
+  console.log('Sorted Tickets by Matching Count:', sortedTickets);
+
+  // Assign prizes to the top matching tickets
+  let prizeIndex = 0; // Initialize the prize index
+
+  // Iterate through all sorted tickets to find winners
+  for (let i = 0; i < sortedTickets.length; i++) {
+    const ticket = sortedTickets[i];
+
+    // Skip tickets that do not meet the minimum criteria to win a prize
+    if (ticket.matchingCount < requiredMatchingCountForPrize) {
+      console.log(`Ticket ID ${ticket.id} does not meet the criteria to win (Matching Count: ${ticket.matchingCount} / Required: ${requiredMatchingCountForPrize}).`);
+      continue; // Move to the next ticket
+    }
+
+    // Iterate through all possible prize positions
+    for (let j = 0; j < prizes.length; j++) {
+      // Check if the ticket has the required number of matches for the current prize
+      if (ticket.matchingCount === winningNumbers.length - j) {
+        winners.push({
+          id: ticket.id,
+          email: ticket.email || 'N/A',
+          ticketNumber: ticket.ticketNumber,
+          fullName: ticket.fullName || 'N/A',
+          place: j + 1, // Dynamic place assignment
+          prize: prizes[j], // Assign prize from the current prize index
+          matchingCount: ticket.matchingCount,
+        });
+
+        console.log(`Winner Found - Ticket ID: ${ticket.id}, Name: ${ticket.fullName || 'N/A'}, Matching Count: ${ticket.matchingCount}, Prize: ${JSON.stringify(prizes[j])}`);
+        break; // Break after assigning a prize to avoid assigning multiple prizes to the same ticket
+      }
+    }
+  }
+
+  // Log final winners
+  console.log('Final Winners:', winners);
+
+  return winners;
+};
+
+
+
+
+
+
+// Function to perform classic lottery draw
+const performClassicLotteryDraw = async (lotteryId) => {
+  try {
+    const lottery = await prisma.lotteryClassic.findUnique({
+      where: { id: lotteryId },
+      select: { availableNumberRange: true, drawnNumbersCount: true, prizes: true },
+    });
+
+    if (!lottery) {
+      console.log(`Lottery ID ${lotteryId} not found.`);
+      return null;
+    }
+
+    // Generate unique random winning numbers
+    const winningNumbers = generateUniqueRandomNumbers(lottery.drawnNumbersCount, lottery.availableNumberRange);
+
+    // Fetch participants and their tickets
+    const participants = await fetchParticipantsFromDatabase(lotteryId);
+
+    if (participants.length === 0) {
+      console.log(`No participants found for lottery ID: ${lotteryId}`);
+      return null; // No participants, no winner
+    }
+
+    // Determine winners based on matching numbers
+    const winners = determineClassicLotteryWinners(participants, winningNumbers, lottery.prizes);
+
+    if (winners.length === 0) {
+      console.log(`No winners for lottery ID: ${lotteryId}`);
+    } else {
+      console.log(`Winners for lottery ID ${lotteryId}:`, winners);
+    }
+
+    const winnersData = winners.map((winner) => ({
+      place: winner.place,
+      ticketId: winner.ticketNumber,
+      fullName: winner.fullName,
+    }));
+
+    // Update lottery with winners and winning numbers
+    await updateLotteryWinners(lotteryId, 'Classic', participants.length, winnersData);
+    await prisma.lotteryClassic.update({
+      where: { id: lotteryId },
+      data: { winningNumbers, lotteryStatus: 'Closed' },
+    });
+
+    // Update ticket statuses
+    await updateTicketStatuses(lotteryId, winners);
+
+    return winners;
+  } catch (error) {
+    console.error(`Error performing classic lottery draw for lottery ID ${lotteryId}:`, error);
+    throw error;
+  }
+};
+
+
 
 // Controller function to schedule a new lottery draw
 export const scheduleDraw = async (req, res) => {
   try {
-    const { id } = req.body; 
+    const { id } = req.body;
     console.log("Request body:", req.body);
 
     if (!id) {
@@ -49,7 +180,6 @@ export const scheduleDraw = async (req, res) => {
   }
 };
 
-
 // Function to fetch lottery details and type
 const fetchLotteryDetails = async (id) => {
   let lottery;
@@ -70,23 +200,20 @@ const fetchLotteryDetails = async (id) => {
   return { lottery: null, lotteryType: null };
 };
 
-export const scheduleLotteryDraw = ({ id, drawTime, lotteryType }) => {  // Parse the full end date from the drawTime
-  const endDate = new Date(drawTime); // Assuming drawTime is passed as a full ISO string
-
-  // Check if endDate is valid
+// Function to schedule lottery draw
+export const scheduleLotteryDraw = ({ id, drawTime, lotteryType }) => {
+  const endDate = new Date(drawTime);
   if (isNaN(endDate.getTime())) {
     console.error(`Invalid draw time for lottery ID ${id}. Please check the endDate value:`, drawTime);
-    return; // Exit if the date is invalid
+    return;
   }
 
-  // Adjust the cron time to the server's local timezone
   const localDate = new Date(endDate);
   const minutes = localDate.getMinutes();
   const hours = localDate.getHours();
   const day = localDate.getDate();
   const month = localDate.getMonth() + 1;
 
-  // Create a cron time string in the local timezone
   const cronTime = `${minutes} ${hours} ${day} ${month} *`;
 
   if (scheduledJobs.has(id)) {
@@ -97,14 +224,19 @@ export const scheduleLotteryDraw = ({ id, drawTime, lotteryType }) => {  // Pars
 
   const job = cron.schedule(cronTime, async () => {
     console.log(`Running scheduled lottery draw for Lottery ID: ${id}`);
-    const winners = await performLotteryDraw(id, lotteryType);
-
+    let winners;
+    if (lotteryType === 'Classic') {
+      winners = await performClassicLotteryDraw(id);
+    } else {
+      winners = await performLotteryDraw(id, lotteryType);
+    }
+    console.log("wwwwww",winners);
     if (winners && winners.length > 0) {
       winners.forEach((winner) => {
-        console.log(`The winner is ${winner.name} for lottery ID ${id} in place ${winner.place}`);
+        console.log(`The winner is ${winner.fullName} for lottery ID ${id} in place ${winner.place}`);
       });
     } else {
-      console.log(`No participants in the lottery ID: ${id}`);
+      console.log(`/schedule/No participants in the lottery ID: ${id}`);
     }
 
     try {
@@ -117,7 +249,6 @@ export const scheduleLotteryDraw = ({ id, drawTime, lotteryType }) => {  // Pars
 
   scheduledJobs.set(id, job);
 
-  // Log formatted date and time
   const formattedDate = localDate.toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
   const formattedTime = localDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
@@ -130,10 +261,8 @@ export const scheduleLotteryDraw = ({ id, drawTime, lotteryType }) => {  // Pars
 };
 
 // Function to initialize scheduled draws
-// Function to initialize scheduled draws
 export const initializeScheduledDraws = async () => {
   try {
-    // Fetch all active lotteries with end dates in the future
     const lotteries = await prisma.lotteryLike.findMany({
       where: { lotteryStatus: 'Open', endDate: { gt: new Date() } },
       select: { id: true, endDate: true },
@@ -149,28 +278,40 @@ export const initializeScheduledDraws = async () => {
       select: { id: true, endDate: true },
     });
 
-    // Combine all lotteries and filter those scheduled for today
     const allLotteries = [
-      ...lotteries.map(lottery => ({ ...lottery, type: 'Like' })),
-      ...fundraisingLotteries.map(lottery => ({ ...lottery, type: 'Fundraising' })),
-      ...classicLotteries.map(lottery => ({ ...lottery, type: 'Classic' })),
+      ...lotteries.map((lottery) => ({ ...lottery, type: 'Like' })),
+      ...fundraisingLotteries.map((lottery) => ({ ...lottery, type: 'Fundraising' })),
+      ...classicLotteries.map((lottery) => ({ ...lottery, type: 'Classic' })),
     ];
 
-    // Filter lotteries that are scheduled for today
-    const today = new Date();
-    const lotteriesForToday = allLotteries.filter(lottery => {
-      const endDate = new Date(lottery.endDate);
+    // Get current local time
+    const now = new Date();
+
+    // Define the start of "today" in local time
+    const localTodayStart = new Date();
+    localTodayStart.setHours(0, 0, 0, 0); // Today at 00:00:00 local time
+
+    // Define the end of "today" in local time (23:59:59)
+    const localTodayEnd = new Date(localTodayStart);
+    localTodayEnd.setHours(23, 59, 59, 999); // Today at 23:59:59 local time
+
+    // Filter lotteries that should run today or just after midnight in local time
+    const lotteriesForToday = allLotteries.filter((lottery) => {
+      const endDateUTC = new Date(lottery.endDate); // endDate is in UTC
+
+      // Convert the UTC end date to the server's local time
+      const localEndDate = new Date(endDateUTC.getTime() - (new Date().getTimezoneOffset() * 60000));
+
+      // Check if the local end date falls within today's local time or just after midnight
       return (
-        endDate.getDate() === today.getDate() &&
-        endDate.getMonth() === today.getMonth() &&
-        endDate.getFullYear() === today.getFullYear()
+        (localEndDate >= localTodayStart && localEndDate <= localTodayEnd) ||
+        (localEndDate > localTodayEnd && localEndDate.getHours() < 6) // Covers times up to 6 AM of the next day
       );
     });
 
-    // Schedule each lottery draw for today
     if (lotteriesForToday.length > 0) {
       for (const lottery of lotteriesForToday) {
-        const drawTime = new Date(lottery.endDate).toISOString(); // Use the full ISO string format
+        const drawTime = new Date(lottery.endDate).toISOString();
         scheduleLotteryDraw({ id: lottery.id, drawTime, lotteryType: lottery.type });
       }
       console.log(`Scheduled ${lotteriesForToday.length} lotteries to run today.`);
@@ -181,6 +322,7 @@ export const initializeScheduledDraws = async () => {
     console.error('Error initializing scheduled draws:', error);
   }
 };
+
 
 // Function to update lottery status to 'Closed'
 const updateLotteryStatusToClosed = async (id, lotteryType) => {
@@ -198,7 +340,6 @@ const performLotteryDraw = async (lotteryId, lotteryType) => {
   try {
     let lottery;
 
-    // Fetch the lottery details based on the type
     if (lotteryType === 'Like') {
       lottery = await prisma.lotteryLike.findUnique({
         where: { id: lotteryId },
@@ -220,33 +361,28 @@ const performLotteryDraw = async (lotteryId, lotteryType) => {
 
     if (!lottery || !lottery.prizes) {
       console.log(`No prizes found for lottery ID: ${lotteryId}`);
-      return null; // No prizes, no draw
+      return null;
     }
 
-    // Extract prizes from the fetched lottery data
     const prizes = lottery.prizes;
     const participants = await fetchParticipantsFromDatabase(lotteryId);
 
     if (participants.length === 0) {
       console.log(`No participants found for lottery ID: ${lotteryId}`);
-      return null; // No participants, no winner
+      return null;
     }
 
-    // Shuffle participants to randomize
     const shuffledParticipants = participants.sort(() => Math.random() - 0.5);
     const winners = [];
 
-    // Track selected ticket numbers to ensure each ticket wins only once
     const selectedTicketNumbers = new Set();
 
-    // Try to assign a prize to each unique ticket
     for (let i = 0; i < prizes.length; i++) {
       const availableParticipants = shuffledParticipants.filter(
-        participant => !selectedTicketNumbers.has(participant.id) // Use participant's ticket id instead of user id
+        participant => !selectedTicketNumbers.has(participant.id)
       );
 
       if (availableParticipants.length > 0) {
-        // Randomly pick a participant from the available ones
         const winnerIndex = Math.floor(Math.random() * availableParticipants.length);
         const winner = availableParticipants[winnerIndex];
 
@@ -254,13 +390,12 @@ const performLotteryDraw = async (lotteryId, lotteryType) => {
           id: winner.id,
           name: winner.name,
           email: winner.email,
-          fullName: winner.fullName,  // Include full name of the winner
-          ticketNumber: winner.ticketNumber,  // Ensure ticketNumber is properly assigned
+          fullName: winner.fullName,
+          ticketNumber: winner.ticketNumber,
           place: i + 1,
           prize: prizes[i],
         });
 
-        // Mark this ticket number as having won
         selectedTicketNumbers.add(winner.id);
       } else {
         console.log('Not enough unique tickets for all prizes');
@@ -272,13 +407,12 @@ const performLotteryDraw = async (lotteryId, lotteryType) => {
 
     const winnersData = winners.map((winner) => ({
       place: winner.place,
-      ticketId: winner.ticketNumber,  // Correctly use the ticketNumber
-      fullName: winner.fullName,  // Include full name in the winners data
+      ticketId: winner.ticketNumber,
+      fullName: winner.fullName,
     }));
 
     await updateLotteryWinners(lotteryId, lotteryType, participants.length, winnersData);
 
-    // Update ticket statuses after determining the winners
     await updateTicketStatuses(lotteryId, winners);
 
     return winners;
@@ -288,7 +422,7 @@ const performLotteryDraw = async (lotteryId, lotteryType) => {
   }
 };
 
-/// Function to fetch participants from the database based on lottery ID
+// Function to fetch participants from the database
 const fetchParticipantsFromDatabase = async (lotteryId) => {
   try {
     const tickets = await prisma.ticket.findMany({
@@ -297,11 +431,12 @@ const fetchParticipantsFromDatabase = async (lotteryId) => {
     });
     console.log("tickets fetched for lottery", tickets);
     return tickets.map(ticket => ({
-      id: ticket.id, // Use ticket ID as the unique identifier
+      id: ticket.id,
       ticketNumber: ticket.ticketNumber,
       name: ticket.user.fullName || `${ticket.user.firstName} ${ticket.user.lastName}`,
-      fullName: ticket.user.fullName || `${ticket.user.firstName} ${ticket.user.lastName}`, // Add full name field
+      fullName: ticket.user.fullName || `${ticket.user.firstName} ${ticket.user.lastName}`,
       email: ticket.user.email,
+      numbers: Array.isArray(ticket.numbers) ? ticket.numbers : null, // Ensure 'numbers' is an array or set to null if not present
     }));
   } catch (error) {
     console.error(`Error fetching participants for lottery ID ${lotteryId}:`, error);
@@ -309,27 +444,22 @@ const fetchParticipantsFromDatabase = async (lotteryId) => {
   }
 };
 
-// Function to update ticket statuses based on the draw result
+// Function to update ticket statuses based on draw results
 const updateTicketStatuses = async (lotteryId, winners) => {
   try {
-    // Extract winning ticket IDs
     const winningTicketIds = new Set(winners.map(winner => winner.id));
 
-    // Fetch all tickets for the lottery
     const allTickets = await prisma.ticket.findMany({
       where: { lotteryId }
     });
 
-    // Prepare ticket updates
     const ticketUpdates = allTickets.map(ticket => {
       if (winningTicketIds.has(ticket.id)) {
-        // Ticket won, update status to 'Won'
         return prisma.ticket.update({
           where: { id: ticket.id },
           data: { status: 'Won' }
         });
       } else {
-        // Ticket did not win, update status to 'Ended'
         return prisma.ticket.update({
           where: { id: ticket.id },
           data: { status: 'Ended' }
@@ -337,7 +467,6 @@ const updateTicketStatuses = async (lotteryId, winners) => {
       }
     });
 
-    // Execute all updates
     await Promise.all(ticketUpdates);
   } catch (error) {
     console.error(`Error updating ticket statuses for lottery ID ${lotteryId}:`, error);
@@ -347,7 +476,6 @@ const updateTicketStatuses = async (lotteryId, winners) => {
 
 // Function to update winners and participant count
 const updateLotteryWinners = async (lotteryId, lotteryType, participantCount, winnersTickets) => {
-  // Determine the correct model based on lottery type
   let model;
   if (lotteryType === 'Like') {
     model = prisma.lotteryLike;
@@ -359,17 +487,16 @@ const updateLotteryWinners = async (lotteryId, lotteryType, participantCount, wi
     throw new Error(`Invalid lottery type: ${lotteryType}`);
   }
 
-  // Perform the update using the correct model
   await model.update({
     where: { id: lotteryId },
-    data: { 
-      participantCount, 
-      winnersTickets 
+    data: {
+      participantCount,
+      winnersTickets
     },
   });
 };
 
-// Controller function to fetch all lotteries with draw times and return them in the response
+// Controller function to fetch all lotteries with draw times
 export const fetchAndReturnLotteries = async (req, res) => {
   try {
     const likeLotteries = await prisma.lotteryLike.findMany({ where: { lotteryStatus: 'Open' }, select: { id: true, endDate: true } });

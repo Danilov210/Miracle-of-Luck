@@ -345,6 +345,7 @@ export const fetchUserTransactions = async (email) => {
   );
   return response.data; // Return the response data
 };
+
 export const getAllTicketsForLottery = async (lotteryId) => {
   const token = localStorage.getItem("access_token"); // Get the token from local storage
   const response = await api.get(`/lotteries/Alltickets/${lotteryId}`, {
@@ -352,3 +353,17 @@ export const getAllTicketsForLottery = async (lotteryId) => {
   });
   return response.data; // Return the response data
 };
+
+
+export const CancelLotteryLike = async (lotteryId) => {
+  try {
+    const response = await api.post('/user/CancelLotteryLike', {
+      data: {lotteryId }, // Send both lotteryId and lotteryType
+    });
+    return response;
+  } catch (error) {
+    console.error("Error canceling the lottery:", error.message);
+    throw new Error("Failed to cancel the lottery.");
+  }
+};
+

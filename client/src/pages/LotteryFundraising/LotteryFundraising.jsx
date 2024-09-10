@@ -19,6 +19,7 @@ import ParticipantsModal from "../../components/participantsModal/participantsMo
 const LotteryFundraising = () => {
   const location = useLocation();
   const { state } = location;
+
   const ticketNumber = state?.ticketNumber;
   const cancelLotteryOption = state?.cancelLotteryOption;
   const navigate = useNavigate();
@@ -127,7 +128,7 @@ const LotteryFundraising = () => {
             <Typography variant="h5" gutterBottom>{title}</Typography>
             <Typography color="textSecondary">Hosted by: {hosted}</Typography>
             <Typography color="textSecondary">Start Date: {new Date(startDate).toLocaleDateString()}</Typography>
-            <Typography color="textSecondary">Draw Time: {new Date(endDate).toLocaleString()}</Typography>
+            <Typography color="textSecondary">Draw Time: {new Date(endDate).toLocaleString('en-GB', { hour12: false })}</Typography>
             <Typography color="textSecondary">Price: ${price} USD</Typography>
           </CardContent>
         </Card>

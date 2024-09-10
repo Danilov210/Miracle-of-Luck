@@ -21,7 +21,7 @@ const OwnedTickets = () => {
       try {
         if (user?.email) {
           const response = await getAllUserLotteries({ email: user.email });
-          setTickets(response.data);
+          setTickets(response.data.tickets);
         }
       } catch (error) {
         console.error("Error fetching user's tickets:", error);
@@ -100,7 +100,7 @@ const OwnedTickets = () => {
       </>
     );
   };
-
+  console.log("tickets",tickets);
   return (
     <div className="wrapper">
       <div className="flexColCenter paddings innerWidth ticket-container">

@@ -2,7 +2,7 @@ import React, { useContext, useState } from "react";
 import { useQuery, useMutation } from "react-query";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { CancelUserTicket, CancelLottery, getLotteryClassic } from "../../utils/api";
+import { CancelUserTicket, CancelLottery, getLotteryClassic, getAllTicketsForLottery } from "../../utils/api";
 import { PuffLoader } from "react-spinners";
 import "./LotteryClassic.css";
 import useAuthCheck from "../../hooks/useAuthCheck";
@@ -13,18 +13,20 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import UserDetailContext from "../../context/UserDetailContext";
 import LotteryClassicTicketPurchase from "../../components/LotteryClassicTicketPurchase/LotteryClassicTicketPurchase";
+import ParticipantsModal from "../../components/participantsModal/participantsModal";
 
 const LotteryClassic = () => {
   const location = useLocation();
   const { state } = location;
   const ticketId = state?.ticketId;
-  const ticketNumbers = state?.ticketNumbers;
   const cancelLotteryOption = state?.cancelLotteryOption;
   const navigate = useNavigate();
 
   const id = location.pathname.split("/").pop();
   const { data, isLoading, isError } = useQuery(["lotteryclassic", id], () => getLotteryClassic(id));
   const [ticketModalOpened, setTicketModalOpened] = useState(false);
+  const [participantsModalOpened, setParticipantsModalOpened] = useState(false);
+  const [participants, setParticipants] = useState([]);
   const { validateLogin } = useAuthCheck();
   const { user } = useAuth0();
   const { setUserDetails } = useContext(UserDetailContext);
@@ -35,34 +37,28 @@ const LotteryClassic = () => {
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [participationExpanded, setParticipationExpanded] = useState(false);
   const [prizesExpanded, setPrizesExpanded] = useState(false);
+  const [winnersExpanded, setWinnersExpanded] = useState(false);
 
   // Mutation to handle ticket cancellation
   const cancelTicketMutation = useMutation({
     mutationFn: () => CancelUserTicket(ticketId),
     onMutate: () => setIsButtonDisabled(true),
     onSuccess: (response) => {
-      setUserDetails((prev) => {
-        const previousDetails = prev && typeof prev === 'object' && prev !== null ? prev : {};
-        return {
-          ...previousDetails, 
-          balance: response.data.balance,
-        };
-      });
+      setUserDetails((prev) => ({
+        ...prev,
+        balance: response.data.balance,
+      }));
 
       if (response?.data?.message) {
         toast.success(response.data.message, {
           position: "bottom-right",
           autoClose: 3000,
         });
-        setTimeout(() => {
-          navigate("/ownedtickets");
-        }, 1000);
+        setTimeout(() => navigate("/ownedtickets"), 1000);
       }
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || error.message, {
-        position: "bottom-right",
-      });
+      toast.error(error.response?.data?.message || error.message, { position: "bottom-right" });
     },
     onSettled: () => {
       setIsButtonDisabled(false);
@@ -75,34 +71,41 @@ const LotteryClassic = () => {
     mutationFn: () => CancelLottery(user?.email, id, "Classic"),
     onMutate: () => setIsCancelLotteryDisabled(true),
     onSuccess: (response) => {
-      setUserDetails((prev) => {
-        const previousDetails = prev && typeof prev === 'object' && prev !== null ? prev : {};
-        return {
-          ...previousDetails,
-          balance: response.data.balance,
-        };
-      });
+      setUserDetails((prev) => ({
+        ...prev,
+        balance: response.data.balance,
+      }));
 
       if (response?.data?.message) {
-        toast.success(response.data.message, {
-          position: "bottom-right",
-          autoClose: 3000,
-        });
-        setTimeout(() => {
-          navigate("/ownedlotteries");
-        }, 1000);
+        toast.success(response.data.message, { position: "bottom-right", autoClose: 3000 });
+        setTimeout(() => navigate("/ownedlotteries"), 1000);
       }
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || error.message, {
-        position: "bottom-right",
-      });
+      toast.error(error.response?.data?.message || error.message, { position: "bottom-right" });
       setIsCancelLotteryDisabled(false);
     },
     onSettled: () => setIsCancelLotteryDisabled(true),
   });
 
-  const { image, title, description, hosted, startDate, endDate, availableNumberRange, drawnNumbersCount, price, prizes, paticipationdescription } = data || {};
+  // Fetch all participants for the lottery
+  const fetchAllParticipants = async () => {
+    setIsButtonDisabled(true);
+    try {
+      const response = await getAllTicketsForLottery(id);
+      console.log("hereee", response)
+
+      setParticipants(response);
+      setParticipantsModalOpened(true);
+    } catch (error) {
+      console.error("Error fetching participants:", error);
+      toast.error("Failed to fetch participants", { position: "bottom-right" });
+    } finally {
+      setIsButtonDisabled(false);
+    }
+  };
+
+  const { image, title, description, hosted, startDate, endDate, availableNumberRange, drawnNumbersCount, price, prizes, paticipationdescription, lotteryStatus, participantCount, winnersTickets } = data || {};
 
   // Convert availableNumberRange to an array of numbers if it is a string
   let numberRange = [];
@@ -111,11 +114,6 @@ const LotteryClassic = () => {
   } else if (Array.isArray(availableNumberRange)) {
     numberRange = availableNumberRange.filter(num => typeof num === "number" && !isNaN(num));
   }
-
-  // Format the number range for display in "Range is: 1-NumberRange" format
-  const formattedNumberRange = numberRange.length > 0 
-    ? `Range is: 1-${Math.max(...numberRange)}`
-    : "Range is: Not Available";  // Provide a fallback message if the range is not available
 
   if (isLoading) return <div className="wrapper flexCenter paddings"><PuffLoader /></div>;
   if (isError) return <div className="wrapper flexCenter paddings">Error while fetching the lottery classic details</div>;
@@ -130,23 +128,11 @@ const LotteryClassic = () => {
           <CardContent>
             <Typography variant="h5" gutterBottom>{title}</Typography>
             <Typography color="textSecondary">Hosted by: {hosted}</Typography>
-            {startDate && (
-              <Typography color="textSecondary">
-                Start Date: {new Date(startDate).toLocaleDateString()}
-              </Typography>
-            )}
-            <Typography color="textSecondary">
-              Draw Time: {new Date(endDate).toLocaleString()}
-            </Typography>
-            <Typography color="textSecondary">
-              Price: ${price} USD
-            </Typography>
-            <Typography color="textSecondary">
-              Number Range: 1-{availableNumberRange}
-            </Typography>
-            <Typography color="textSecondary">
-              Numbers to Draw: {drawnNumbersCount}
-            </Typography>
+            {startDate && <Typography color="textSecondary">Start Date: {new Date(startDate).toLocaleDateString()}</Typography>}
+            <Typography color="textSecondary">Draw Time: {new Date(endDate).toLocaleString('en-GB', { hour12: false })}</Typography>
+            <Typography color="textSecondary">Price: ${price} USD</Typography>
+            <Typography color="textSecondary">Number Range: 1-{availableNumberRange}</Typography>
+            <Typography color="textSecondary">Numbers to Draw: {drawnNumbersCount}</Typography>
           </CardContent>
         </Card>
 
@@ -164,6 +150,18 @@ const LotteryClassic = () => {
             </Collapse>
           </CardContent>
         </Card>
+
+        {/* Number of Participants Section */}
+        {participantCount && (
+          <Card className="participants-count-card">
+            <CardContent>
+              <Typography variant="h6">Number of Participants</Typography>
+              <Typography variant="body1" style={{ fontSize: '18px', fontWeight: 'bold', marginTop: '10px' }}>
+                {participantCount}
+              </Typography>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Participation Section with Expandable Panel */}
         <Card className="participation-card">
@@ -201,29 +199,58 @@ const LotteryClassic = () => {
           </Card>
         )}
 
+        {/* Winners Section with Expandable Panel (Visible Only When Lottery is Closed) */}
+        {lotteryStatus === "Closed" && winnersTickets?.length > 0 && (
+          <Card className="winners-card">
+            <CardContent>
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <Typography variant="h6">Winners</Typography>
+                <IconButton onClick={() => setWinnersExpanded(!winnersExpanded)}>
+                  {winnersExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                </IconButton>
+              </Box>
+              <Collapse in={winnersExpanded}>
+                {winnersTickets.map(({ ticketId, fullName, place }, idx) => (
+                  <Typography key={idx}>
+                    Place {place}: Winner - {fullName} (Ticket ID: {ticketId})
+                  </Typography>
+                ))}
+              </Collapse>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Actions Section */}
         <Box className="flexColCenter NavBut">
           <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2, mt: 2 }}>
-            <button
-              className={ticketId ? "button button-red" : "button button-green"}
-              onClick={() => {
-                if (ticketId) {
-                  cancelTicketMutation.mutate();
-                } else {
-                  if (validateLogin()) setTicketModalOpened(true);
-                }
-              }}
-              disabled={isButtonDisabled}
-            >
-              {ticketId ? "Cancel Ticket" : "Buy Ticket"}
-            </button>
-            {cancelLotteryOption && (
-              <button
-                className="button button-red"
-                onClick={() => cancelLotteryMutation.mutate()}
-                disabled={isCancelLotteryDisabled}
-              >
-                Cancel Lottery
+            {lotteryStatus !== "Closed" ? (
+              <>
+                <button
+                  className={ticketId ? "button button-red" : "button button-green"}
+                  onClick={() => {
+                    if (ticketId) {
+                      cancelTicketMutation.mutate();
+                    } else {
+                      if (validateLogin()) setTicketModalOpened(true);
+                    }
+                  }}
+                  disabled={isButtonDisabled}
+                >
+                  {ticketId ? "Cancel Ticket" : "Buy Ticket"}
+                </button>
+                {cancelLotteryOption && (
+                  <button
+                    className="button button-red"
+                    onClick={() => cancelLotteryMutation.mutate()}
+                    disabled={isCancelLotteryDisabled}
+                  >
+                    Cancel Lottery
+                  </button>
+                )}
+              </>
+            ) : (
+              <button className="button button-blue" onClick={fetchAllParticipants} disabled={isButtonDisabled}>
+                Show All Participants
               </button>
             )}
           </Box>
@@ -239,11 +266,16 @@ const LotteryClassic = () => {
           availableNumberRange={availableNumberRange}
           drawnNumbersCount={drawnNumbersCount}
         />
+        {participantsModalOpened && (
+          <ParticipantsModal
+            opened={participantsModalOpened}
+            setOpened={setParticipantsModalOpened}
+            participants={participants}
+          />
+        )}
       </div>
     </div>
   );
 };
 
 export default LotteryClassic;
-
-

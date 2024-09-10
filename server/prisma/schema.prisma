@@ -121,6 +121,7 @@ model LotteryClassic {
     tickets                     Ticket[]      @relation("UserTicket")
     participantCount            Int?          // Field to store number of participants
     winnersTickets              Json?         // New field to store winning tickets and their places
+    winningNumbers              Json?        // New field to store the winning numbers
 }
 
 model Ticket {

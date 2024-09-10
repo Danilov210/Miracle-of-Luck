@@ -57,6 +57,9 @@ const LotteryClassicTicketPurchase = ({
         },
       ],
     }));
+
+    // Reset selected numbers after successful purchase
+    setSelectedNumbers([]);
   };
 
   const { mutate, isLoading } = useMutation({

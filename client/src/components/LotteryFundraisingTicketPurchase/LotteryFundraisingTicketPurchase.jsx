@@ -33,6 +33,8 @@ const LotteryClassicTicketPurchase = ({ opened, setOpened, lotteryId, email, tic
         },
       ],
     }));
+
+    setTicketNumber(1); // Reset ticket number to 1 after purchase
   };
 
   // Mutation for booking tickets

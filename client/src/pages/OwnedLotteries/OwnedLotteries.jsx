@@ -23,7 +23,7 @@ const OwnedLotteries = () => {
       try {
         if (user?.email) {
           const response = await getAllUserOwnedLotteries(user.email);
-          setOwnedLotteries(response.data);
+          setOwnedLotteries(response.data.user);
         }
       } catch (error) {
         console.error("Error fetching user's owned lotteries:", error);
@@ -68,6 +68,7 @@ const OwnedLotteries = () => {
 
   // Function to handle navigation
   const handleLotteryClick = (lottery, type) => {
+    console.log("oooow", lottery, type)
     navigate(`/ownedlotteries/${type}/${lottery.id}`, {
       state: {
         from: "/ownedlotteries",
@@ -145,6 +146,7 @@ const OwnedLotteries = () => {
             </div>
           </div>
         )}
+
       </div>
     </div>
   );
