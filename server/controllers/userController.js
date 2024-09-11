@@ -107,7 +107,7 @@ export const buyTicketFundraising = asyncHandler(async (req, res) => {
           ticketNumber: `${lotteryId}-${Date.now()}-${i}`,
           purchaseDate: new Date(),
           status: "Active",
-          user: { connect: { id: user.id }, },
+          user: { connect: { email: user.email }, },
           lotteryFundraising: { connect: { id: lotteryId }, },
         },
       });
@@ -181,7 +181,7 @@ export const buyTicketClassic = asyncHandler(async (req, res) => {
           purchaseDate: new Date(),
           status: "Active",
           numbers: selectedNumbers, // Store the user-chosen numbers in the ticket
-          user: { connect: { id: user.id }, },
+          user: { connect: { email: user.email }, },
           lotteryClassic: { connect: { id: lotteryId }, },
         },
       });

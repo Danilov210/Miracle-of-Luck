@@ -2,6 +2,8 @@ import React, { useContext } from "react";
 import { Avatar, Menu, MenuItem, IconButton, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import UserDetailContext from "../../context/UserDetailContext";
+import { getUserData } from "../../utils/api.js";
+
 import "./ProfileMenu.css";
 
 const ProfileMenu = ({ user, logout }) => {
@@ -22,6 +24,18 @@ const ProfileMenu = ({ user, logout }) => {
     logout(); // Ensure logout is a valid function passed as a prop
     handleClose();
   };
+
+  // Function to handle fetching user data
+  const handleGetUserData = async () => {
+    handleClose(); // Close the menu
+    try {
+      const userData = await getUserData();
+      console.log('User Data:', userData);
+    } catch (error) {
+      console.error('Error fetching user data:', error.message);
+    }
+  };
+
   return (
     <>
       <IconButton onClick={handleClick} className="icon-button" style={{ display: 'flex', alignItems: 'center' }}>
@@ -60,6 +74,9 @@ const ProfileMenu = ({ user, logout }) => {
         </MenuItem>
         <MenuItem onClick={() => { handleClose(); navigate("/Transactions"); }}>
           My Transactions
+        </MenuItem>
+        <MenuItem onClick={handleGetUserData}>
+          Get User Data
         </MenuItem>
         <MenuItem onClick={handleLogout}>
           Logout

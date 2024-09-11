@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import SearchBar from "../../components/SearchBar/SearchBar";
 import "./LotteriesLike.css";
 import useLotteriesLike from "../../hooks/useLotteries";
@@ -8,6 +9,11 @@ import LotteryLikeCard from "../../components/LotteryLikeCard/LotteryLikeCard";
 const LotteriesLike = () => {
   const { data, isError, isLoading } = useLotteriesLike();
   const [filter, setFilter] = useState("");
+  const location = useLocation();
+
+  // Determine if the user came from the "Results" or "Lotteries" page
+  const isFromResultsPage = location.pathname.includes("/results");
+  const isFromLotteriesPage = location.pathname.includes("/lotteries");
 
   if (isError) {
     return (
@@ -25,13 +31,22 @@ const LotteriesLike = () => {
     );
   }
 
-  // Filtering data based on the available fields
-  const filteredData = data.filter((lottery) =>
-    ["title", "description", "hosted", "paticipationdescription", "link", "lotteryStatus"]
-      .some((key) =>
-        String(lottery[key])?.toLowerCase().includes(filter.toLowerCase())
-      )
-  );
+  // Filter data based on the navigation source and user search input
+  const filteredData = data
+    .filter((lottery) =>
+      ["title", "description", "hosted", "paticipationdescription", "link", "lotteryStatus"]
+        .some((key) =>
+          String(lottery[key])?.toLowerCase().includes(filter.toLowerCase())
+        )
+    )
+    .filter((lottery) => {
+      // Show only closed lotteries if coming from the "Results" page
+      if (isFromResultsPage) return lottery.lotteryStatus === "Closed";
+      // Show only open lotteries if coming from the "Lotteries" page
+      if (isFromLotteriesPage) return lottery.lotteryStatus === "Open";
+      // Otherwise, show all lotteries
+      return true;
+    });
 
   return (
     <div className="wrapper">

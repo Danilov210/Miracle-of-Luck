@@ -1,6 +1,5 @@
 import asyncHandler from "express-async-handler";
 import { scheduleLotteryDraw } from './drawController.js'; // Adjust the path as necessary
-
 import { prisma } from "../config/prismaConfig.js";
 
 //++ Function to create a new LotteryLike entry in the database
@@ -18,6 +17,14 @@ export const createLotteryLike = asyncHandler(async (req, res) => {
     userEmail, // Use userEmail from the request body
   } = req.body.data;
 
+  // Validate the endDate format and convert it if necessary
+  const formattedEndDate = new Date(endDate);
+
+  if (isNaN(formattedEndDate.getTime())) {
+    console.error("Invalid endDate format:", endDate);
+    return res.status(400).json({ message: "Invalid endDate format. Please provide a full date and time." });
+  }
+
   try {
     // Create a new LotteryLike entry
     const lotteryLike = await prisma.lotteryLike.create({
@@ -27,7 +34,7 @@ export const createLotteryLike = asyncHandler(async (req, res) => {
         description,
         paticipationdescription,
         startDate: new Date(),
-        endDate,
+        endDate: formattedEndDate.toISOString(),
         image,
         conditions: conditions || [],
         prizes: prizes || [],
@@ -54,13 +61,22 @@ export const createLotteryLike = asyncHandler(async (req, res) => {
       include: { ownedLotteriesLike: true }, // Include ownedLotteriesLike in the response
     });
 
-    // Send the response
-    console.log("LotteryLike created successfully.");
+    // Check if the lottery end date is today
+    const today = new Date();
+    if (
+      formattedEndDate.getDate() === today.getDate() &&
+      formattedEndDate.getMonth() === today.getMonth() &&
+      formattedEndDate.getFullYear() === today.getFullYear()
+    ) {
+      // If the lottery is for today, schedule it
+      const drawTime = formattedEndDate.toISOString(); // Use full ISO format
+      scheduleLotteryDraw({ id: lotteryLike.id, drawTime, lotteryType: 'Like' });
+    }
+
     return res.status(201).json({
       message: "LotteryLike created successfully.",
       updatedUser, // Include updated user in the response
     });
-
   } catch (err) {
     // Check if the error is a unique constraint violation
     if (
@@ -81,6 +97,7 @@ export const createLotteryLike = asyncHandler(async (req, res) => {
       .send({ message: "Failed to create lotteryLike. Please try again." });
   }
 });
+
 
 
 // Function to create a new LotteryFundraising entry in the database
@@ -139,7 +156,6 @@ export const createLotteryFundraising = asyncHandler(async (req, res) => {
       include: { ownedLotteriesFundraising: true },
     });
 
-    console.log("LotteryFundraising created successfully.");
 
     // Check if the lottery end date is today
     const today = new Date();
@@ -226,7 +242,6 @@ export const createLotteryClassic = asyncHandler(async (req, res) => {
       include: { ownedLotteriesClassic: true }, // Include ownedLotteriesClassic in the response
     });
 
-    console.log("LotteryClassic created successfully.");
 
     // Check if the lottery end date is today
     const today = new Date();
@@ -258,9 +273,7 @@ export const getAllLotteriesLike = asyncHandler(async (req, res) => {
   try {
     // Fetch all open lotteries, ordered by the createdAt date in descending order
     const lotteries = await prisma.lotteryLike.findMany({
-      where: {
-        lotteryStatus: 'Open', // Only fetch open lotteries
-      },
+ 
       orderBy: {
         createdAt: "desc",
       },
@@ -305,9 +318,7 @@ export const getAllLotteriesClassic = asyncHandler(async (req, res) => {
   try {
     // Fetch all open lotteries, ordered by the createdAt date in descending order
     const lotteries = await prisma.lotteryClassic.findMany({
-      where: {
-        lotteryStatus: 'Open', // Only fetch open lotteries
-      },
+
       orderBy: {
         createdAt: "desc",
       },
@@ -433,6 +444,11 @@ export const getAllTicketsForLottery = async (req, res) => {
         } 
       },
     });
+
+    // Check if no tickets are found
+    if (tickets.length === 0) {
+      return res.status(200).json({ message: 'No participants found for this lottery.' });
+    }
 
     // Return the fetched tickets
     res.status(200).send(tickets);

@@ -124,6 +124,8 @@ const performClassicLotteryDraw = async (lotteryId) => {
       place: winner.place,
       ticketId: winner.ticketNumber,
       fullName: winner.fullName,
+      email:winner.email,
+
     }));
 
     // Update lottery with winners and winning numbers
@@ -409,6 +411,7 @@ const performLotteryDraw = async (lotteryId, lotteryType) => {
       place: winner.place,
       ticketId: winner.ticketNumber,
       fullName: winner.fullName,
+      email:winner.email,
     }));
 
     await updateLotteryWinners(lotteryId, lotteryType, participants.length, winnersData);
@@ -516,3 +519,65 @@ export const fetchAndReturnLotteries = async (req, res) => {
 };
 
 export { scheduledJobs };
+
+
+// Function to check who liked the link and handle user and ticket creation
+const checkAndCreateUsersForLotteryLike = async (lotteryId) => {
+  try {
+    // Step 1: Fetch the list of users who liked the external link
+    const { data: likedUsers } = await axios.get('URL_TO_CHECK_LIKES'); // Replace 'URL_TO_CHECK_LIKES' with the actual URL
+
+    console.log("Users who liked the link:", likedUsers);
+
+    for (const likedUser of likedUsers) {
+      // Step 2: Check if user already exists in the database
+      let user = await prisma.user.findUnique({
+        where: { email: likedUser.email }, // Assuming users are identified by email
+      });
+
+      // Step 3: If user doesn't exist, create a new user
+      if (!user) {
+        user = await prisma.user.create({
+          data: {
+            email: likedUser.email,
+            fullName: likedUser.fullName || `${likedUser.firstName} ${likedUser.lastName}`,
+            firstName: likedUser.firstName,
+            lastName: likedUser.lastName,
+          },
+        });
+
+        console.log(`User created: ${user.email}`);
+      } else {
+        console.log(`User already exists: ${user.email}`);
+      }
+
+      // Step 4: Purchase a free ticket for the user
+      await prisma.ticket.create({
+        data: {
+          lotteryId: lotteryId,
+          userId: user.id,
+          ticketNumber: generateUniqueTicketNumber(), // Replace with actual function to generate a unique ticket number
+          status: 'Active', // or any other appropriate status
+          numbers: generateRandomNumbersForTicket(), // Replace with actual function to generate numbers for the ticket
+        },
+      });
+
+      console.log(`Free ticket purchased for user: ${user.email} in lottery: ${lotteryId}`);
+    }
+  } catch (error) {
+    console.error('Error checking and creating users for LotteryLike:', error);
+    throw error;
+  }
+};
+
+// Helper function to generate a unique ticket number
+const generateUniqueTicketNumber = () => {
+  return `TICKET-${Math.random().toString(36).substring(2, 15).toUpperCase()}`;
+};
+
+// Helper function to generate random numbers for the ticket
+const generateRandomNumbersForTicket = () => {
+  // Implement your logic to generate random numbers for the ticket
+  // Example: return [1, 2, 3, 4, 5];
+  return Array.from({ length: 5 }, () => Math.floor(Math.random() * 50) + 1); // Example for generating 5 random numbers between 1 and 50
+};

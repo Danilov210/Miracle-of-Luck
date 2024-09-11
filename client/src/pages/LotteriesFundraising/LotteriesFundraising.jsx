@@ -48,7 +48,6 @@ const LotteriesFundraising = () => {
       return true;
     });
 
-
   return (
     <div className="wrapper">
       <div className="flexColCenter paddings innerWidth lottery-container">

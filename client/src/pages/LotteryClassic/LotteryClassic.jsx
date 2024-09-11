@@ -19,6 +19,9 @@ const LotteryClassic = () => {
   const location = useLocation();
   const { state } = location;
   const ticketId = state?.ticketId;
+  const ticketStatus = state?.ticketStatus;
+  const ticketNumbers = state?.ticketNumbers; // Access ticket numbers from state
+  const ticketNumber = state?.ticketNumber;
   const cancelLotteryOption = state?.cancelLotteryOption;
   const navigate = useNavigate();
 
@@ -27,6 +30,7 @@ const LotteryClassic = () => {
   const [ticketModalOpened, setTicketModalOpened] = useState(false);
   const [participantsModalOpened, setParticipantsModalOpened] = useState(false);
   const [participants, setParticipants] = useState([]);
+
   const { validateLogin } = useAuthCheck();
   const { user } = useAuth0();
   const { setUserDetails } = useContext(UserDetailContext);
@@ -38,6 +42,8 @@ const LotteryClassic = () => {
   const [participationExpanded, setParticipationExpanded] = useState(false);
   const [prizesExpanded, setPrizesExpanded] = useState(false);
   const [winnersExpanded, setWinnersExpanded] = useState(false);
+  const [userPrizeExpanded, setUserPrizeExpanded] = useState(false); // State for user prize section
+
 
   // Mutation to handle ticket cancellation
   const cancelTicketMutation = useMutation({
@@ -88,24 +94,27 @@ const LotteryClassic = () => {
     onSettled: () => setIsCancelLotteryDisabled(true),
   });
 
-  // Fetch all participants for the lottery
-  const fetchAllParticipants = async () => {
-    setIsButtonDisabled(true);
-    try {
-      const response = await getAllTicketsForLottery(id);
-      console.log("hereee", response)
-
-      setParticipants(response);
-      setParticipantsModalOpened(true);
-    } catch (error) {
-      console.error("Error fetching participants:", error);
-      toast.error("Failed to fetch participants", { position: "bottom-right" });
-    } finally {
-      setIsButtonDisabled(false);
-    }
+    // Fetch all participants for the lottery
+    const fetchAllParticipants = async () => {
+      setIsButtonDisabled(true);
+      try {
+          const response = await getAllTicketsForLottery(id);
+          if (response.length === 0) {
+              // No participants found
+              toast.info("No participants found", { position: "bottom-right" });
+          } else {
+              // Participants found, open modal
+              setParticipants(response);
+              setParticipantsModalOpened(true);
+          }
+      } catch (error) {
+          toast.error("Failed to fetch participants", { position: "bottom-right" });
+      } finally {
+          setIsButtonDisabled(false);
+      }
   };
 
-  const { image, title, description, hosted, startDate, endDate, availableNumberRange, drawnNumbersCount, price, prizes, paticipationdescription, lotteryStatus, participantCount, winnersTickets } = data || {};
+  const { image, title, description, hosted, startDate, endDate, availableNumberRange, drawnNumbersCount, price, prizes, paticipationdescription, lotteryStatus, participantCount, winnersTickets, winningNumbers } = data || {};
 
   // Convert availableNumberRange to an array of numbers if it is a string
   let numberRange = [];
@@ -114,6 +123,11 @@ const LotteryClassic = () => {
   } else if (Array.isArray(availableNumberRange)) {
     numberRange = availableNumberRange.filter(num => typeof num === "number" && !isNaN(num));
   }
+
+  const userWinning = winnersTickets?.find((winner) => {
+    return winner.ticketId === ticketNumber;
+  });
+
 
   if (isLoading) return <div className="wrapper flexCenter paddings"><PuffLoader /></div>;
   if (isError) return <div className="wrapper flexCenter paddings">Error while fetching the lottery classic details</div>;
@@ -128,13 +142,16 @@ const LotteryClassic = () => {
           <CardContent>
             <Typography variant="h5" gutterBottom>{title}</Typography>
             <Typography color="textSecondary">Hosted by: {hosted}</Typography>
-            {startDate && <Typography color="textSecondary">Start Date: {new Date(startDate).toLocaleDateString()}</Typography>}
+            {startDate && <Typography color="textSecondary">Lottery Opens: {new Date(startDate).toLocaleDateString('en-GB')}</Typography>}
             <Typography color="textSecondary">Draw Time: {new Date(endDate).toLocaleString('en-GB', { hour12: false })}</Typography>
-            <Typography color="textSecondary">Price: ${price} USD</Typography>
+            <Typography color="textSecondary">Price per Ticket: ${price} USD</Typography>
             <Typography color="textSecondary">Number Range: 1-{availableNumberRange}</Typography>
             <Typography color="textSecondary">Numbers to Draw: {drawnNumbersCount}</Typography>
           </CardContent>
         </Card>
+
+
+
 
         {/* Description Section with Expandable Panel */}
         <Card className="description-card">
@@ -151,17 +168,7 @@ const LotteryClassic = () => {
           </CardContent>
         </Card>
 
-        {/* Number of Participants Section */}
-        {participantCount && (
-          <Card className="participants-count-card">
-            <CardContent>
-              <Typography variant="h6">Number of Participants</Typography>
-              <Typography variant="body1" style={{ fontSize: '18px', fontWeight: 'bold', marginTop: '10px' }}>
-                {participantCount}
-              </Typography>
-            </CardContent>
-          </Card>
-        )}
+
 
         {/* Participation Section with Expandable Panel */}
         <Card className="participation-card">
@@ -191,7 +198,7 @@ const LotteryClassic = () => {
               <Collapse in={prizesExpanded}>
                 {prizes.map(({ place, amount }, idx) => (
                   <Typography key={idx}>
-                    Place {place}: {amount} USD
+                    Place {place}: ${amount} USD
                   </Typography>
                 ))}
               </Collapse>
@@ -199,8 +206,9 @@ const LotteryClassic = () => {
           </Card>
         )}
 
+
         {/* Winners Section with Expandable Panel (Visible Only When Lottery is Closed) */}
-        {lotteryStatus === "Closed" && winnersTickets?.length > 0 && (
+        {lotteryStatus === "Closed" && (
           <Card className="winners-card">
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -210,15 +218,98 @@ const LotteryClassic = () => {
                 </IconButton>
               </Box>
               <Collapse in={winnersExpanded}>
-                {winnersTickets.map(({ ticketId, fullName, place }, idx) => (
-                  <Typography key={idx}>
-                    Place {place}: Winner - {fullName} (Ticket ID: {ticketId})
+                {winnersTickets?.length > 0 ? (
+                  winnersTickets.map(({ ticketId, fullName, place, email }, idx) => (
+                    <Typography key={idx}>
+                      Place {place}: Winner - {fullName}{" "}
+                      {cancelLotteryOption ? `(Email: ${email})` : `(Ticket ID: ${ticketId})`}
+                    </Typography>
+                  ))
+                ) : (
+                  <Typography variant="body2" color="textSecondary">
+                    No winners were determined for this lottery.
                   </Typography>
-                ))}
+                )}
               </Collapse>
             </CardContent>
           </Card>
         )}
+
+
+        {/* Number of Participants Section */}
+        {participantCount ? (
+          <Card className="participants-count-card">
+            <CardContent>
+              <Typography variant="h6">Number of Participants:</Typography>
+              <Typography
+                variant="body1"
+                style={{ fontSize: "18px", fontWeight: "bold", marginTop: "10px" }}
+              >
+                {participantCount}
+              </Typography>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="participants-count-card">
+            <CardContent>
+              <Typography variant="h6">Number of Participants:</Typography>
+              <Typography
+                variant="body1"
+                style={{ fontSize: "18px", fontWeight: "bold", marginTop: "10px" }}
+              >
+                No participants
+              </Typography>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Winning Numbers Section (Visible only when lottery is closed) */}
+        {lotteryStatus === "Closed" && winningNumbers && (
+          <Card className="winning-numbers-card">
+            <CardContent>
+              <Typography variant="h6">Winning Numbers:</Typography>
+              <Typography variant="body1" style={{ fontWeight: 'bold', marginTop: '10px' }}>
+                {winningNumbers.join(", ")}
+              </Typography>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Ticket Numbers Section (Visible only if ticketId exists) */}
+        {ticketId && ticketNumbers && (
+          <Card className="ticket-numbers-card">
+            <CardContent>
+              <Typography variant="h6">Your Numbers:</Typography>
+              <Typography variant="body1" style={{ fontWeight: 'bold', marginTop: '10px' }}>
+                {ticketNumbers.join(", ")}
+              </Typography>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* User Prize Section (Only display if ticketStatus is "won") */}
+        {ticketStatus === "Won" && userWinning && (
+          <Card className="prize-card">
+            <CardContent>
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <Typography variant="h6">Congratulations! You Won:</Typography>
+                <IconButton onClick={() => setUserPrizeExpanded(!userPrizeExpanded)}>
+                  {userPrizeExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                </IconButton>
+              </Box>
+              <Collapse in={userPrizeExpanded}>
+                <Typography variant="body1" style={{ fontWeight: 'bold', marginTop: '10px' }}>
+                  Place: {userWinning.place}
+                </Typography>
+                <Typography variant="body1" style={{ fontWeight: 'bold' }}>
+                  Prize: {prizes.find((prize) => prize.place === userWinning?.place)?.amount}$
+                </Typography>
+
+              </Collapse>
+            </CardContent>
+          </Card>
+        )}
+
 
         {/* Actions Section */}
         <Box className="flexColCenter NavBut">

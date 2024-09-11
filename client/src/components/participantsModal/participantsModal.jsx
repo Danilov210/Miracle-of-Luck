@@ -22,7 +22,7 @@ const ParticipantsModal = ({ opened, setOpened, participants }) => {
             </div>
           ))
         ) : (
-          <p>No participants found.</p>
+          <p>No participants.</p>
         )}
       </Box>
     </Modal>

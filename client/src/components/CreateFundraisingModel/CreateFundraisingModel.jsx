@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { Container, Dialog, DialogTitle, DialogContent, IconButton, Typography, Stepper, Step, StepLabel, TextField, Select, Box, MenuItem, Button } from "@mui/material";
 import { HelpOutline as OtherIcon, Close as CloseIcon, Phone as PhoneIcon, Email as EmailIcon, Star as StarIcon, ShoppingCart as ShoppingCartIcon, CardGiftcard as GiftCardIcon, Smartphone as SmartphoneIcon, Laptop as LaptopIcon, Headphones as HeadphonesIcon, Watch as WatchIcon, Subscriptions as SubscriptionsIcon, SportsEsports as GamingConsoleIcon, Kitchen as KitchenIcon, Speaker as SpeakerIcon, Face as BeautyIcon, Flight as TravelIcon, Work as FashionIcon, Home as HomeAutomationIcon, Hiking as OutdoorGearIcon, MenuBook as BooksIcon, Pets as PetSuppliesIcon, Camera as CameraIcon, EmojiFoodBeverage as SnackBoxIcon, DirectionsCar as CarIcon, FitnessCenter as FitnessIcon, LocalDining as RestaurantIcon, LocalMall as ShoppingMallIcon, LocalMovies as MovieIcon, LocalBar as BarIcon, Spa as SpaIcon, AirplanemodeActive as AirplaneIcon, DirectionsBoat as BoatIcon, DirectionsBike as BikeIcon, DirectionsBus as BusIcon, Bed as BedIcon, LocalHospital as HospitalIcon, Computer as DesktopIcon, Tablet as TabletIcon, Toys as ToysIcon, MusicNote as MusicNoteIcon, ArtTrack as ArtIcon, FlashOn as FlashIcon, Healing as HealingIcon, Nature as NatureIcon, Palette as PaletteIcon, BeachAccess as BeachIcon, BugReport as BugIcon, Code as CodeIcon, FlashOn as PowerIcon, FitnessCenter as WorkoutIcon } from "@mui/icons-material";
-import { toast } from "react-toastify"; // Import toast from react-toastify
+import { toast } from "react-toastify";
 import UploadImage from "../UploadImage/UploadImage";
 import { createLotteryFundraising } from "../../utils/api";
 import "./CreateFundraisingModel.css";
@@ -127,7 +127,8 @@ const CreateFundraisingModel = ({ open, setOpen }) => {
         }
     };
 
-    const canProceedToNextStep = lotteryDetails.paticipationdescription.trim() && lotteryDetails.price > 0;
+    const isEndDateValid = lotteryDetails.endDate && new Date(lotteryDetails.endDate) > new Date();
+    const canProceedToNextStep = lotteryDetails.paticipationdescription.trim() && lotteryDetails.price > 0 && isEndDateValid;
 
     const renderTextField = (label, value, onChange, type = "text") => (
         <TextField
@@ -175,7 +176,7 @@ const CreateFundraisingModel = ({ open, setOpen }) => {
                                 InputLabelProps={{ shrink: true }}
                                 inputProps={{ min: currentDateTime }}
                             />
-                            {lotteryDetails.title && lotteryDetails.hosted && lotteryDetails.description && lotteryDetails.endDate && (
+                            {lotteryDetails.title && lotteryDetails.hosted && lotteryDetails.description && lotteryDetails.endDate && isEndDateValid && (
                                 <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
                                     <button className="button button-blue" onClick={nextStep}>Next</button>
                                 </Box>
@@ -198,7 +199,6 @@ const CreateFundraisingModel = ({ open, setOpen }) => {
                                     {canProceedToNextStep && <button className="button button-blue" onClick={nextStep}>Next</button>}
                                 </Box>
                             </Box>
-
                         </div>
                     )}
 

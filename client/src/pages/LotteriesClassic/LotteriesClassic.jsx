@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import SearchBar from "../../components/SearchBar/SearchBar";
 import "./LotteriesClassic.css";
 import useLotteriesClassic from "../../hooks/useLotteriesClassic";
@@ -8,6 +9,11 @@ import LotteryClassicCard from "../../components/LotteryClassicCard/LotteryClass
 const LotteriesClassic = () => {
   const { data, isError, isLoading } = useLotteriesClassic();
   const [filter, setFilter] = useState("");
+  const location = useLocation();
+
+  // Determine if the user came from the "Results" or "Lotteries" page
+  const isFromResultsPage = location.pathname.includes("/results");
+  const isFromLotteriesPage = location.pathname.includes("/lotteries");
 
   if (isError) {
     return (
@@ -25,12 +31,22 @@ const LotteriesClassic = () => {
     );
   }
 
-  const filteredData = data.filter((lottery) =>
-    ["title", "description", "hosted", "price", "availableNumberRange", "drawnNumbersCount", "participation"]
-      .some((key) =>
-        String(lottery[key])?.toLowerCase().includes(filter.toLowerCase())
-      )
-  );
+  // Filter data based on the navigation source and user search input
+  const filteredData = data
+    .filter((lottery) =>
+      ["title", "description", "hosted", "price", "availableNumberRange", "drawnNumbersCount", "participation"]
+        .some((key) =>
+          String(lottery[key])?.toLowerCase().includes(filter.toLowerCase())
+        )
+    )
+    .filter((lottery) => {
+      // Show only closed lotteries if coming from the "Results" page
+      if (isFromResultsPage) return lottery.lotteryStatus === "Closed";
+      // Show only open lotteries if coming from the "Lotteries" page
+      if (isFromLotteriesPage) return lottery.lotteryStatus === "Open";
+      // Otherwise, show all lotteries
+      return true;
+    });
 
   return (
     <div className="wrapper">
@@ -38,7 +54,6 @@ const LotteriesClassic = () => {
         <SearchBar filter={filter} setFilter={setFilter} />
         <div className="paddings flexCenter lottery">
           {filteredData.length > 0 ? (
-
             filteredData.map((card, i) => (
               <LotteryClassicCard card={card} key={i} />
             ))

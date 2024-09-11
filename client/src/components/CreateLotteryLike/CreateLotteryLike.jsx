@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { Container, Dialog, DialogTitle, DialogContent, IconButton, Typography, Stepper, Step, StepLabel, TextField, Select, Box, MenuItem, Button, FormControlLabel, FormGroup, Checkbox } from "@mui/material";
 import { HelpOutline as OtherIcon, Close as CloseIcon, Phone as PhoneIcon, Email as EmailIcon, Star as StarIcon, ShoppingCart as ShoppingCartIcon, CardGiftcard as GiftCardIcon, Smartphone as SmartphoneIcon, Laptop as LaptopIcon, Headphones as HeadphonesIcon, Watch as WatchIcon, Subscriptions as SubscriptionsIcon, SportsEsports as GamingConsoleIcon, Kitchen as KitchenIcon, Speaker as SpeakerIcon, Face as BeautyIcon, Flight as TravelIcon, Work as FashionIcon, Home as HomeAutomationIcon, Hiking as OutdoorGearIcon, MenuBook as BooksIcon, Pets as PetSuppliesIcon, Camera as CameraIcon, EmojiFoodBeverage as SnackBoxIcon, DirectionsCar as CarIcon, FitnessCenter as FitnessIcon, LocalDining as RestaurantIcon, LocalMall as ShoppingMallIcon, LocalMovies as MovieIcon, LocalBar as BarIcon, Spa as SpaIcon, AirplanemodeActive as AirplaneIcon, DirectionsBoat as BoatIcon, DirectionsBike as BikeIcon, DirectionsBus as BusIcon, Bed as BedIcon, LocalHospital as HospitalIcon, Computer as DesktopIcon, Tablet as TabletIcon, Toys as ToysIcon, MusicNote as MusicNoteIcon, ArtTrack as ArtIcon, FlashOn as FlashIcon, Healing as HealingIcon, Nature as NatureIcon, Palette as PaletteIcon, BeachAccess as BeachIcon, BugReport as BugIcon, Code as CodeIcon, FlashOn as PowerIcon, FitnessCenter as WorkoutIcon } from "@mui/icons-material";
-import { toast } from "react-toastify"; // Import toast from react-toastify
+import { toast } from "react-toastify";
 import UploadImage from "../UploadImage/UploadImage";
 import { createLotteryLike } from "../../utils/api";
 import "./CreateLotteryLike.css";
+
 
 const iconOptions = [
     { label: "Phone", value: "Phone", icon: <PhoneIcon /> },
@@ -60,6 +61,7 @@ const iconOptions = [
     { label: "Others", value: "Others", icon: <OtherIcon /> },
 ];
 
+
 const CreateLotteryLike = ({ open, setOpen }) => {
     const { user, getAccessTokenSilently } = useAuth0();
 
@@ -85,8 +87,18 @@ const CreateLotteryLike = ({ open, setOpen }) => {
     const [activeStep, setActiveStep] = useState(0);
     const [lotteryDetails, setLotteryDetails] = useState(initialLotteryDetails);
     const [conditions, setConditions] = useState(initialConditions);
+    const [isLinkValid, setIsLinkValid] = useState(true);
 
     const currentDateTime = new Date().toISOString().slice(0, 16);
+
+    const validateLink = (link) => {
+        try {
+            new URL(link);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    };
 
     const nextStep = () => {
         if (activeStep === 2) {
@@ -122,9 +134,7 @@ const CreateLotteryLike = ({ open, setOpen }) => {
     const handleFinish = async () => {
         try {
             const token = await getAccessTokenSilently();
-            
             const endDate = lotteryDetails.endDate ? new Date(lotteryDetails.endDate).toISOString() : null;
-
             const payload = { ...lotteryDetails, endDate };
 
             const response = await createLotteryLike(payload, token);
@@ -147,8 +157,9 @@ const CreateLotteryLike = ({ open, setOpen }) => {
         }
     };
 
+    const isEndDateValid = lotteryDetails.endDate && new Date(lotteryDetails.endDate) > new Date();
     const isAnyConditionSelected = Object.values(conditions).some((value) => value);
-    const canProceedToNextStep = isAnyConditionSelected && lotteryDetails.paticipationdescription.trim() !== "";
+    const canProceedToNextStep = isAnyConditionSelected && lotteryDetails.paticipationdescription.trim() !== "" && isEndDateValid && isLinkValid;
 
     const renderTextField = (label, value, onChange, type = "text") => (
         <TextField
@@ -199,19 +210,27 @@ const CreateLotteryLike = ({ open, setOpen }) => {
                                 InputLabelProps={{ shrink: true }}
                                 inputProps={{ min: currentDateTime }}
                             />
-                            {renderTextField("Link to Facebook Page", lotteryDetails.link, (e) => setLotteryDetails({ ...lotteryDetails, link: e.target.value }))}
-                            <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-                                {activeStep > 0 && (
-                                    <Button onClick={prevStep} variant="contained" color="primary" sx={{ mr: 2 }}>
-                                        Back
-                                    </Button>
-                                )}
-                                {lotteryDetails.title && lotteryDetails.hosted && lotteryDetails.description && lotteryDetails.endDate && lotteryDetails.link && (
+                            <TextField
+                                label="Link to Facebook Page"
+                                value={lotteryDetails.link}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    setLotteryDetails({ ...lotteryDetails, link: value });
+                                    setIsLinkValid(validateLink(value));
+                                }}
+                                fullWidth
+                                margin="normal"
+                                error={!isLinkValid}
+                                helperText={!isLinkValid ? "Please enter a valid URL." : ""}
+                            />
+                            {lotteryDetails.title && lotteryDetails.hosted && lotteryDetails.description && lotteryDetails.endDate && isLinkValid && isEndDateValid && (
+                                <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
                                     <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
                                         <button className="button button-blue" onClick={nextStep}>Next</button>
                                     </Box>
-                                )}
-                            </Box>
+                                </Box>
+                            )}
+
                         </div>
                     )}
 

@@ -36,8 +36,6 @@ const initializeDrawsAndScheduleDailyCheck = async () => {
 // Schedule a cron job to run every day at midnight (00:00)
 cron.schedule('0 0 * * *', async () => {
   console.log('Running daily check for upcoming lotteries at 00:00...');
-  // cron.schedule('0 15 * * *', async () => {
-  //   console.log('Running daily check for upcoming lotteries at 15:00...');
   await initializeDrawsAndScheduleDailyCheck();
 });
 

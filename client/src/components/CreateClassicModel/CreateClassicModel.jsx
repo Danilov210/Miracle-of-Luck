@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { Close as CloseIcon } from "@mui/icons-material";
 import { Container, Dialog, DialogTitle, DialogContent, IconButton, Typography, Stepper, Step, StepLabel, TextField, Select, Box, MenuItem, Button } from "@mui/material";
-import { toast } from "react-toastify"; // Import toast from react-toastify
+import { toast } from "react-toastify"; 
 import UploadImage from "../UploadImage/UploadImage";
 import { createLotteryClassic } from "../../utils/api";
 import "./CreateClassicModel.css";
@@ -55,8 +55,6 @@ const CreateClassicModel = ({ open, setOpen }) => {
         try {
             const token = await getAccessTokenSilently();
             
-            
-            
             const endDate = lotteryDetails.endDate ? new Date(lotteryDetails.endDate).toISOString() : null;
             const payload = { ...lotteryDetails, endDate };
 
@@ -79,7 +77,10 @@ const CreateClassicModel = ({ open, setOpen }) => {
         }
     };
 
-    const canProceedToNextStep = lotteryDetails.paticipationdescription.trim() && lotteryDetails.price > 0 && lotteryDetails.availableNumberRange > 0 && lotteryDetails.drawnNumbersCount > 0 && lotteryDetails.availableNumberRange > lotteryDetails.drawnNumbersCount;
+    // Additional check to ensure endDate is in the future
+    const isEndDateValid = lotteryDetails.endDate && new Date(lotteryDetails.endDate) > new Date();
+
+    const canProceedToNextStep = isEndDateValid && lotteryDetails.paticipationdescription.trim() && lotteryDetails.price > 0 && lotteryDetails.availableNumberRange > 0 && lotteryDetails.drawnNumbersCount > 0 && lotteryDetails.availableNumberRange > lotteryDetails.drawnNumbersCount;
 
     const renderTextField = (label, value, onChange, type = "text") => (
         <TextField
@@ -127,7 +128,7 @@ const CreateClassicModel = ({ open, setOpen }) => {
                                 InputLabelProps={{ shrink: true }}
                                 inputProps={{ min: currentDateTime }}
                             />
-                            {lotteryDetails.title && lotteryDetails.hosted && lotteryDetails.description && lotteryDetails.endDate && (
+                            {lotteryDetails.title && lotteryDetails.hosted && lotteryDetails.description && lotteryDetails.endDate && isEndDateValid && (
                                 <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
                                     <button className="button button-blue" onClick={nextStep}>Next</button>
                                 </Box>

@@ -2,27 +2,37 @@ import React, { useContext, useState } from "react";
 import { useQuery, useMutation } from "react-query";
 import { toast } from "react-toastify";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getLotteryLike, CancelLotteryLike } from "../../utils/api";
+import { getLotteryLike, CancelLotteryLike, getAllTicketsForLottery } from "../../utils/api";
 import { PuffLoader } from "react-spinners";
 import { Box, Card, CardContent, Typography, Collapse, IconButton, Button } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import UserDetailContext from "../../context/UserDetailContext";
+import ParticipantsModal from "../../components/participantsModal/participantsModal";
+
 import "./LotteryLike.css";
 
 const LotteryLike = () => {
     const location = useLocation();
     const { state } = location;
+    const ticketId = state?.ticketId;
     const cancelLotteryOption = state?.cancelLotteryOption;
     const navigate = useNavigate();
-  
-     // State to control expandable panels
+
+    // State to control expandable panels
     const id = location.pathname.split("/").pop();
     const [descriptionExpanded, setDescriptionExpanded] = useState(false);
     const [participationExpanded, setParticipationExpanded] = useState(false);
+    const [participants, setParticipants] = useState([]);
+
+    const [participantsModalOpened, setParticipantsModalOpened] = useState(false);
     const [prizesExpanded, setPrizesExpanded] = useState(false);
+    const [isButtonDisabled, setIsButtonDisabled] = useState(false);
     const [isCancelLotteryDisabled, setIsCancelLotteryDisabled] = useState(false);
+    const [winnersExpanded, setWinnersExpanded] = useState(false);
+
     const { setUserDetails } = useContext(UserDetailContext);
+
 
 
     // Fetch lottery data with useQuery
@@ -34,7 +44,7 @@ const LotteryLike = () => {
 
     // Mutation for canceling the lottery
     const cancelLotteryMutation = useMutation({
-        mutationFn: () => CancelLotteryLike(id),
+        mutationFn: () => CancelLotteryLike(ticketId),
         onMutate: () => setIsCancelLotteryDisabled(true),
         onSuccess: (response) => {
             setUserDetails((prev) => ({
@@ -47,13 +57,39 @@ const LotteryLike = () => {
             toast.error(error.response?.data?.message || error.message, { position: "bottom-right" });
             setIsCancelLotteryDisabled(false);
         },
-        onSettled: () => setIsCancelLotteryDisabled(true),
+        onSettled: () => {
+            setIsCancelLotteryDisabled(true);
+        }
+    });
+
+
+    // Fetch all participants for the lottery
+    const fetchAllParticipants = async () => {
+        setIsButtonDisabled(true);
+        try {
+            const response = await getAllTicketsForLottery(id);
+            if (response.length === 0) {
+                // No participants found
+                toast.info("No participants found", { position: "bottom-right" });
+            } else {
+                // Participants found, open modal
+                setParticipants(response);
+                setParticipantsModalOpened(true);
+            }
+        } catch (error) {
+            toast.error("Failed to fetch participants", { position: "bottom-right" });
+        } finally {
+            setIsButtonDisabled(false);
+        }
+    };
+    const { image, title, description, hosted, endDate, startDate, conditions, prizes, link, paticipationdescription, lotteryStatus, participantCount, winnersTickets } = data || {};
+
+    const userWinning = winnersTickets?.find((winner) => {
+        return winner.ticketId === ticketNumber;
     });
 
     if (isLoading) return <div className="flexCenter paddings"><PuffLoader /></div>;
     if (isError) return <div className="flexCenter paddings">Error while fetching lottery details</div>;
-
-    const { image, title, description, hosted, endDate, startDate, conditions, prizes, link } = data || {};
 
     return (
         <div className="wrapper">
@@ -65,10 +101,12 @@ const LotteryLike = () => {
                     <CardContent>
                         <Typography variant="h5" gutterBottom>{title}</Typography>
                         <Typography color="textSecondary">Hosted by: {hosted}</Typography>
-                        <Typography color="textSecondary">Start Date: {new Date(startDate).toLocaleDateString('en-GB')}</Typography>
+                        <Typography color="textSecondary">Lottery Opens: {new Date(startDate).toLocaleDateString('en-GB')}</Typography>
                         <Typography color="textSecondary">Draw Time: {new Date(endDate).toLocaleString('en-GB', { hour12: false })}</Typography>
                     </CardContent>
                 </Card>
+
+
 
                 {/* Description Section with Expandable Panel */}
                 <Card className="description-card">
@@ -130,11 +168,88 @@ const LotteryLike = () => {
                     </Typography>
                 )}
 
+                {/* Winners Section with Expandable Panel (Visible Only When Lottery is Closed) */}
+                {lotteryStatus === "Closed" && (
+                    <Card className="winners-card">
+                        <CardContent>
+                            <Box display="flex" justifyContent="space-between" alignItems="center">
+                                <Typography variant="h6">Winners</Typography>
+                                <IconButton onClick={() => setWinnersExpanded(!winnersExpanded)}>
+                                    {winnersExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                                </IconButton>
+                            </Box>
+                            <Collapse in={winnersExpanded}>
+                                {winnersTickets?.length > 0 ? (
+                                    winnersTickets.map(({ ticketId, fullName, place, email }, idx) => (
+                                        <Typography key={idx}>
+                                            Place {place}: Winner - {fullName}{" "}
+                                            {cancelLotteryOption ? `(Email: ${email})` : `(Ticket ID: ${ticketId})`}
+                                        </Typography>
+                                    ))
+                                ) : (
+                                    <Typography variant="body2" color="textSecondary">
+                                        No winners were determined for this lottery.
+                                    </Typography>
+                                )}
+                            </Collapse>
+                        </CardContent>
+                    </Card>
+                )}
 
-                <Typography className="primary3Text" variant="body2">
-                    To enter this draw, complete all conditions on the provided link, and you'll be automatically entered.
-                </Typography>
+                {/* Number of Participants Section */}
+                {participantCount ? (
+                    <Card className="participants-count-card">
+                        <CardContent>
+                            <Typography variant="h6">Number of Participants:</Typography>
+                            <Typography
+                                variant="body1"
+                                style={{ fontSize: "18px", fontWeight: "bold", marginTop: "10px" }}
+                            >
+                                {participantCount}
+                            </Typography>
+                        </CardContent>
+                    </Card>
+                ) : (
+                    <Card className="participants-count-card">
+                        <CardContent>
+                            <Typography variant="h6">Number of Participants:</Typography>
+                            <Typography
+                                variant="body1"
+                                style={{ fontSize: "18px", fontWeight: "bold", marginTop: "10px" }}
+                            >
+                                No participants
+                            </Typography>
+                        </CardContent>
+                    </Card>
+                )}
 
+                {lotteryStatus === "Open" && (
+                    <Typography className="primary3Text" variant="body2">
+                        To enter this draw, complete all conditions on the provided link, and you'll be automatically entered.
+                    </Typography>
+                )}
+                {/* Actions Section */}
+                <Box className="flexColCenter NavBut">
+                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2, mt: 2 }}>
+                        {lotteryStatus !== "Closed" && cancelLotteryOption ? (
+                            <button
+                                className="button button-red"
+                                onClick={() => cancelLotteryMutation.mutate()}
+                                disabled={isCancelLotteryDisabled}
+                            >
+                                Cancel Lottery
+                            </button>
+                        ) : (
+                            <button
+                                className="button button-blue"
+                                onClick={fetchAllParticipants}
+                                disabled={isButtonDisabled}
+                            >
+                                Show All Participants
+                            </button>
+                        )}
+                    </Box>
+                </Box>
 
                 {/* Cancel Lottery Button */}
                 {cancelLotteryOption && (<button
@@ -144,6 +259,15 @@ const LotteryLike = () => {
                 >
                     Cancel Lottery
                 </button>
+                )}
+
+
+                {participantsModalOpened && (
+                    <ParticipantsModal
+                        opened={participantsModalOpened}
+                        setOpened={setParticipantsModalOpened}
+                        participants={participants}
+                    />
                 )}
             </div>
         </div>

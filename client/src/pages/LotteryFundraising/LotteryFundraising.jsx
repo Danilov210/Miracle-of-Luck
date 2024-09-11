@@ -2,14 +2,13 @@ import React, { useContext, useState } from "react";
 import { useQuery, useMutation } from "react-query";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { CancelUserTicket, getLotteryFundraising, CancelLottery, getAllTicketsForLottery } from "../../utils/api";
+import { CancelUserTicket, CancelLottery, getLotteryFundraising, getAllTicketsForLottery } from "../../utils/api";
 import { PuffLoader } from "react-spinners";
-import { AiFillHeart } from "react-icons/ai";
 import "./LotteryFundraising.css";
 import useAuthCheck from "../../hooks/useAuthCheck";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useLocation } from "react-router-dom";
-import { Box, Card, CardContent, Typography, Collapse, IconButton } from "@mui/material";
+import { Box, Card, CardContent, Typography, Collapse, IconButton, TextField } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import UserDetailContext from "../../context/UserDetailContext";
@@ -19,39 +18,46 @@ import ParticipantsModal from "../../components/participantsModal/participantsMo
 const LotteryFundraising = () => {
   const location = useLocation();
   const { state } = location;
-
+  const ticketId = state?.ticketId;
   const ticketNumber = state?.ticketNumber;
+  const ticketStatus = state?.ticketStatus;
   const cancelLotteryOption = state?.cancelLotteryOption;
   const navigate = useNavigate();
-
 
   const id = location.pathname.split("/").pop();
   const { data, isLoading, isError } = useQuery(["lotteryfundraising", id], () => getLotteryFundraising(id));
   const [ticketModalOpened, setTicketModalOpened] = useState(false);
   const [participantsModalOpened, setParticipantsModalOpened] = useState(false);
+  const [ticketNumberExpanded, setTicketNumberExpanded] = useState(false); // State to control ticket number section
   const [participants, setParticipants] = useState([]);
   const { validateLogin } = useAuthCheck();
   const { user } = useAuth0();
   const { setUserDetails } = useContext(UserDetailContext);
 
+  // State for managing button disabled status
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [isCancelLotteryDisabled, setIsCancelLotteryDisabled] = useState(false);
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [participationExpanded, setParticipationExpanded] = useState(false);
   const [prizesExpanded, setPrizesExpanded] = useState(false);
   const [winnersExpanded, setWinnersExpanded] = useState(false);
-  const [ticketNumberExpanded, setTicketNumberExpanded] = useState(false); // State to control ticket number section
-  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
-  const [isCancelLotteryDisabled, setIsCancelLotteryDisabled] = useState(false);
+  const [userPrizeExpanded, setUserPrizeExpanded] = useState(false); // State for user prize section
 
+  // Mutation to handle ticket cancellation
   const cancelTicketMutation = useMutation({
-    mutationFn: () => CancelUserTicket(ticketNumber),
+    mutationFn: () => CancelUserTicket(ticketId),
     onMutate: () => setIsButtonDisabled(true),
     onSuccess: (response) => {
       setUserDetails((prev) => ({
         ...prev,
         balance: response.data.balance,
       }));
+
       if (response?.data?.message) {
-        toast.success(response.data.message, { position: "bottom-right", autoClose: 3000 });
+        toast.success(response.data.message, {
+          position: "bottom-right",
+          autoClose: 3000,
+        });
         setTimeout(() => navigate("/ownedtickets"), 1000);
       }
     },
@@ -59,11 +65,12 @@ const LotteryFundraising = () => {
       toast.error(error.response?.data?.message || error.message, { position: "bottom-right" });
     },
     onSettled: () => {
-      setTicketModalOpened(false);
       setIsButtonDisabled(false);
+      setTicketModalOpened(false);
     },
   });
 
+  // Mutation to handle lottery cancellation
   const cancelLotteryMutation = useMutation({
     mutationFn: () => CancelLottery(user?.email, id, "Fundraising"),
     onMutate: () => setIsCancelLotteryDisabled(true),
@@ -85,33 +92,33 @@ const LotteryFundraising = () => {
     onSettled: () => setIsCancelLotteryDisabled(true),
   });
 
-  const fetchAllParticipants = async () => {
-    setIsButtonDisabled(true);
-    try {
-      const response = await getAllTicketsForLottery(id);
-      setParticipants(response);
-      setParticipantsModalOpened(true);
-    } catch (error) {
-      console.error("Error fetching participants:", error);
-      toast.error("Failed to fetch participants", { position: "bottom-right" });
-    } finally {
-      setIsButtonDisabled(false);
-    }
+    // Fetch all participants for the lottery
+    const fetchAllParticipants = async () => {
+      setIsButtonDisabled(true);
+      try {
+          const response = await getAllTicketsForLottery(id);
+          if (response.length === 0) {
+              // No participants found
+              toast.info("No participants found", { position: "bottom-right" });
+          } else {
+              // Participants found, open modal
+              setParticipants(response);
+              setParticipantsModalOpened(true);
+          }
+      } catch (error) {
+          toast.error("Failed to fetch participants", { position: "bottom-right" });
+      } finally {
+          setIsButtonDisabled(false);
+      }
   };
 
   const { title, description, hosted, startDate, endDate, price, prizes, image, paticipationdescription, lotteryStatus, participantCount, winnersTickets } = data || {};
 
-  const formatTicketNumber = (ticketNumber) => {
-    if (!ticketNumber) return null;
-    const parts = ticketNumber.split("-");
-    return parts.map((part, index) => (
-      <span key={index}>
-        {part}
-        {index < parts.length - 1 ? "-" : ""}
-        <br />
-      </span>
-    ));
-  };
+
+  const userWinning = winnersTickets?.find((winner) => {
+    return winner.ticketId === ticketNumber;
+  });
+
 
   if (isLoading) return <div className="wrapper flexCenter paddings"><PuffLoader /></div>;
   if (isError) return <div className="wrapper flexCenter paddings">Error while fetching the lottery details</div>;
@@ -119,7 +126,6 @@ const LotteryFundraising = () => {
   return (
     <div className="wrapper">
       <div className="flexColStart paddings innerWidth lottery-container">
-        <AiFillHeart size={30} color="transparent" className="like" />
         {image && <img src={image} alt="Lottery Image" className="lottery-image" />}
 
         {/* Lottery Details Section */}
@@ -127,9 +133,9 @@ const LotteryFundraising = () => {
           <CardContent>
             <Typography variant="h5" gutterBottom>{title}</Typography>
             <Typography color="textSecondary">Hosted by: {hosted}</Typography>
-            <Typography color="textSecondary">Start Date: {new Date(startDate).toLocaleDateString()}</Typography>
+            <Typography color="textSecondary">Lottery Opens: {new Date(startDate).toLocaleDateString('en-GB')}</Typography>
             <Typography color="textSecondary">Draw Time: {new Date(endDate).toLocaleString('en-GB', { hour12: false })}</Typography>
-            <Typography color="textSecondary">Price: ${price} USD</Typography>
+            <Typography color="textSecondary">Price per Ticket: ${price} USD</Typography>
           </CardContent>
         </Card>
 
@@ -148,36 +154,7 @@ const LotteryFundraising = () => {
           </CardContent>
         </Card>
 
-        {/* Number of Participants Section */}
-        {participantCount && (
-          <Card className="participants-count-card">
-            <CardContent>
-              <Typography variant="h6">Number of Participants</Typography>
-              <Typography variant="body1" style={{ fontSize: '18px', fontWeight: 'bold', marginTop: '10px' }}>
-                {participantCount}
-              </Typography>
-            </CardContent>
-          </Card>
-        )}
 
-        {/* My Ticket Number Section with Expandable Panel */}
-        {ticketNumber && (
-          <Card className="ticket-number-card">
-            <CardContent>
-              <Box display="flex" justifyContent="space-between" alignItems="center">
-                <Typography variant="h6">My Ticket Number</Typography>
-                <IconButton onClick={() => setTicketNumberExpanded(!ticketNumberExpanded)}>
-                  {ticketNumberExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                </IconButton>
-              </Box>
-              <Collapse in={ticketNumberExpanded}>
-                <Typography variant="h5" color="secondary" style={{ fontWeight: 'bold', fontSize: '24px' }}>
-                  {formatTicketNumber(ticketNumber)}
-                </Typography>
-              </Collapse>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Participation Section with Expandable Panel */}
         <Card className="participation-card">
@@ -216,7 +193,7 @@ const LotteryFundraising = () => {
         )}
 
         {/* Winners Section with Expandable Panel (Visible Only When Lottery is Closed) */}
-        {lotteryStatus === "Closed" && winnersTickets?.length > 0 && (
+        {lotteryStatus === "Closed" && (
           <Card className="winners-card">
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -226,11 +203,69 @@ const LotteryFundraising = () => {
                 </IconButton>
               </Box>
               <Collapse in={winnersExpanded}>
-                {winnersTickets.map(({ ticketId, fullName, place }, idx) => (
-                  <Typography key={idx}>
-                    Place {place}: Winner - {fullName} (Ticket ID: {ticketId})
+                {winnersTickets?.length > 0 ? (
+                  winnersTickets.map(({ ticketId, fullName, place, email }, idx) => (
+                    <Typography key={idx}>
+                      Place {place}: Winner - {fullName}{" "}
+                      {cancelLotteryOption ? `(Email: ${email})` : `(Ticket ID: ${ticketId})`}
+                    </Typography>
+                  ))
+                ) : (
+                  <Typography variant="body2" color="textSecondary">
+                    No winners were determined for this lottery.
                   </Typography>
-                ))}
+                )}
+              </Collapse>
+            </CardContent>
+          </Card>
+        )}
+
+
+        {/* Number of Participants Section */}
+        {participantCount ? (
+          <Card className="participants-count-card">
+            <CardContent>
+              <Typography variant="h6">Number of Participants:</Typography>
+              <Typography
+                variant="body1"
+                style={{ fontSize: "18px", fontWeight: "bold", marginTop: "10px" }}
+              >
+                {participantCount}
+              </Typography>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="participants-count-card">
+            <CardContent>
+              <Typography variant="h6">Number of Participants:</Typography>
+              <Typography
+                variant="body1"
+                style={{ fontSize: "18px", fontWeight: "bold", marginTop: "10px" }}
+              >
+                No participants
+              </Typography>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* User Prize Section (Only display if ticketStatus is "won") */}
+        {ticketStatus === "Won" && userWinning && (
+          <Card className="prize-card">
+            <CardContent>
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <Typography variant="h6">Congratulations! You Won:</Typography>
+                <IconButton onClick={() => setUserPrizeExpanded(!userPrizeExpanded)}>
+                  {userPrizeExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                </IconButton>
+              </Box>
+              <Collapse in={userPrizeExpanded}>
+                <Typography variant="body1" style={{ fontWeight: 'bold', marginTop: '10px' }}>
+                  Place: {userWinning.place}
+                </Typography>
+                <Typography variant="body1" style={{ fontWeight: 'bold' }}>
+                  Prize: {prizes.find((prize) => prize.place === userWinning?.place)?.description} ({prizes.find((prize) => prize.place === userWinning?.place)?.icon})
+                </Typography>
+
               </Collapse>
             </CardContent>
           </Card>
@@ -242,9 +277,9 @@ const LotteryFundraising = () => {
             {lotteryStatus !== "Closed" ? (
               <>
                 <button
-                  className={ticketNumber ? "button button-red" : "button button-green"}
+                  className={ticketId ? "button button-red" : "button button-green"}
                   onClick={() => {
-                    if (ticketNumber) {
+                    if (ticketId) {
                       cancelTicketMutation.mutate();
                     } else {
                       if (validateLogin()) setTicketModalOpened(true);
@@ -252,7 +287,7 @@ const LotteryFundraising = () => {
                   }}
                   disabled={isButtonDisabled}
                 >
-                  {ticketNumber ? "Cancel Ticket" : "Buy Ticket"}
+                  {ticketId ? "Cancel Ticket" : "Buy Ticket"}
                 </button>
                 {cancelLotteryOption && (
                   <button
@@ -272,8 +307,14 @@ const LotteryFundraising = () => {
           </Box>
         </Box>
 
-        {/* Modals */}
-        <LotteryFundraisingTicketPurchase opened={ticketModalOpened} setOpened={setTicketModalOpened} lotteryId={id} email={user?.email} ticketPrice={price} />
+        {/* Ticket Purchase Modal */}
+        <LotteryFundraisingTicketPurchase
+          opened={ticketModalOpened}
+          setOpened={setTicketModalOpened}
+          lotteryId={id}
+          email={user?.email}
+          ticketPrice={price}
+        />
         {participantsModalOpened && (
           <ParticipantsModal
             opened={participantsModalOpened}

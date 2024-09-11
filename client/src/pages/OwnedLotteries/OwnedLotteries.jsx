@@ -68,7 +68,6 @@ const OwnedLotteries = () => {
 
   // Function to handle navigation
   const handleLotteryClick = (lottery, type) => {
-    console.log("oooow", lottery, type)
     navigate(`/ownedlotteries/${type}/${lottery.id}`, {
       state: {
         from: "/ownedlotteries",

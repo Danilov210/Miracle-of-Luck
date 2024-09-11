@@ -75,6 +75,7 @@ const OwnedTickets = () => {
       ticketNumber: ticket.ticketNumber, 
       ticketId: ticket.id,
       ticketNumbers: ticket.numbers || null,
+      ticketStatus:ticket.status,
     };
     navigate(`/ownedtickets/${ticket.lotteryType}/${ticket.lotteryId}`, { state });
   };
@@ -100,7 +101,6 @@ const OwnedTickets = () => {
       </>
     );
   };
-  console.log("tickets",tickets);
   return (
     <div className="wrapper">
       <div className="flexColCenter paddings innerWidth ticket-container">
