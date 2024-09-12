@@ -57,7 +57,7 @@ const LotteryClassic = () => {
 
   // Mutation to handle ticket cancellation
   const cancelTicketMutation = useMutation({
-    mutationFn: () => CancelUserTicket(ticketId),
+    mutationFn: () => CancelUserTicket(ticketId,user?.email),
     onMutate: () => setIsButtonDisabled(true),
     onSuccess: (response) => {
       setUserDetails((prev) => ({

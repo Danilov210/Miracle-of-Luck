@@ -2,7 +2,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 export const api = axios.create({
-  baseURL: "https://miracle-of-luck2.vercel.app/api",
+  baseURL: "https://miracle-of-luck.vercel.app/api",
 });
 
 export const createUser = async (data, token) => {
@@ -248,28 +248,33 @@ export const getAllUserLotteries = async (email) => {
   }
 };
 
-export const CancelUserTicket = async (ticketId) => {
+export const CancelUserTicket = async (ticketId,email) => {
   try {
+    if (!ticketId) {
+      throw new Error("Ticket ID is required.");
+    }
     const response = await api.post('/user/CancelTicket', {
-      data: { ticketId },
+      data: { ticketId ,email }, // Ensures that ticketId is properly sent in the request body
     });
-    return response;
+
+    return response; // Return the response directly if successful
 
   } catch (error) {
-    console.error("Error fetching user's lotteries:", error.message);
-    throw new Error("Failed to fetch user lotteries.");
+    console.error("Error cancelling user's ticket:", error.response?.data?.message || error.message);
+    throw new Error("Failed to cancel user's ticket.");
   }
 };
 
 
-
 export const CancelLottery = async (email, lotteryId, lotteryType) => {
+
   try {
     const response = await api.post('/user/CancelLottery', {
       data: { email, lotteryId, lotteryType }, // Send both lotteryId and lotteryType
     });
     return response;
   } catch (error) {
+
     console.error("Error canceling the lottery:", error.message);
     throw new Error("Failed to cancel the lottery.");
   }

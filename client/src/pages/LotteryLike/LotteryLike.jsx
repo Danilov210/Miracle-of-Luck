@@ -7,6 +7,8 @@ import { PuffLoader } from "react-spinners";
 import { Box, Card, CardContent, Typography, Collapse, IconButton } from "@mui/material";
 import UserDetailContext from "../../context/UserDetailContext";
 import ParticipantsModal from "../../components/participantsModal/participantsModal";
+import { useAuth0 } from "@auth0/auth0-react";
+
 import "./LotteryLike.css";
 
 // Custom SVG icons to replace MUI icons
@@ -44,7 +46,7 @@ const LotteryLike = () => {
   const [userPrizeExpanded, setUserPrizeExpanded] = useState(false); // State for user prize section
 
   const { setUserDetails } = useContext(UserDetailContext);
-
+  const { user } = useAuth0();
   // Fetch lottery data with useQuery
   const { data, isLoading, isError } = useQuery(["LotteryLike", id], () => getLotteryLike(id), {
     refetchOnWindowFocus: false,
@@ -54,7 +56,7 @@ const LotteryLike = () => {
 
   // Mutation for canceling the lottery
   const cancelLotteryMutation = useMutation({
-    mutationFn: () => CancelLotteryLike(ticketId),
+    mutationFn: () => CancelLotteryLike(id),
     onMutate: () => setIsCancelLotteryDisabled(true),
     onSuccess: (response) => {
       setUserDetails((prev) => ({

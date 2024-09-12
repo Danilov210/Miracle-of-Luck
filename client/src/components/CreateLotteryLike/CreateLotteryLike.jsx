@@ -251,7 +251,7 @@ const CreateLotteryLike = ({ open, setOpen }) => {
                 error={!isLinkValid}
                 helperText={!isLinkValid ? "Please enter a valid URL." : ""}
               />
-              {lotteryDetails.title && lotteryDetails.hosted && lotteryDetails.description && lotteryDetails.endDate && isLinkValid && isEndDateValid && (
+              {lotteryDetails.title && lotteryDetails.hosted && lotteryDetails.description && lotteryDetails.endDate && lotteryDetails.link && isLinkValid && isEndDateValid && (
                 <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
                   <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
                     <button className="button button-blue" onClick={nextStep}>Next</button>

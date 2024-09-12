@@ -56,14 +56,13 @@ const LotteryFundraising = () => {
 
   // Mutation to handle ticket cancellation
   const cancelTicketMutation = useMutation({
-    mutationFn: () => CancelUserTicket(ticketId),
+    mutationFn: () => CancelUserTicket(ticketId,user?.email),
     onMutate: () => setIsButtonDisabled(true),
     onSuccess: (response) => {
       setUserDetails((prev) => ({
         ...prev,
         balance: response.data.balance,
       }));
-
       if (response?.data?.message) {
         toast.success(response.data.message, {
           position: "bottom-right",

@@ -259,24 +259,26 @@ export const getUserOwnedTickets = asyncHandler(async (req, res) => {
   }
 });
 
-//++ Function to cancel a ticket 
 export const cancelTicket = asyncHandler(async (req, res) => {
   try {
-    const { ticketId } = req.body.data; // Extract ticket ID from request
+    const { email,ticketId } = req.body.data; // Extract ticket ID from request
 
-    // Validate ticket ID and find the ticket
+    // Validate ticket ID
     if (!ticketId) return res.status(400).send({ error: "Ticket ID is required" });
 
+    // Find the ticket
     const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
     if (!ticket) return res.status(404).send({ error: "Ticket not found" });
 
     // Check if the ticket is not active
     if (ticket.status !== "Active") return res.status(400).send({ error: "This ticket is no longer active." });
 
+
     // Find associated lottery and get the ticket price
-    const lottery = ticket.lotteryType === "Fundraising"
-      ? await prisma.lotteryFundraising.findUnique({ where: { id: ticket.lotteryId } })
-      : await prisma.lotteryClassic.findUnique({ where: { id: ticket.lotteryId } });
+    const lottery =
+      ticket.lotteryType === "Fundraising"
+        ? await prisma.lotteryFundraising.findUnique({ where: { id: ticket.lotteryId }, select: { price: true } })
+        : await prisma.lotteryClassic.findUnique({ where: { id: ticket.lotteryId }, select: { price: true } });
 
     if (!lottery) return res.status(404).send({ error: "Associated lottery not found" });
 
@@ -284,27 +286,37 @@ export const cancelTicket = asyncHandler(async (req, res) => {
 
     // Perform a transaction to delete the ticket, update balance, and create a transaction entry
     const updatedUser = await prisma.$transaction(async (prisma) => {
-      await prisma.ticket.delete({ where: { id: ticketId } }); // Delete ticket
-      const user = await prisma.user.update({ // Update user balance
-        where: { id: ticket.userId },
+      // Delete ticket
+      await prisma.ticket.delete({ where: { id: ticketId } });
+
+      // Update user balance
+      const user = await prisma.user.update({
+        where: { email },
         data: { balance: { increment: refundAmount } },
       });
-      await prisma.transaction.create({ // Log transaction
+
+      // Log transaction
+      await prisma.transaction.create({
         data: {
           amount: refundAmount,
           transactionType: "CancelTicket",
-          user: { connect: { id: ticket.userId } },
+          user: { connect: { email } },
           createdAt: new Date(),
         },
       });
+
       return user;
     });
 
-    return res.status(201).send({ message: "Ticket canceled successfully", balance: updatedUser.balance });
+    return res.status(200).send({ message: "Ticket canceled successfully", balance: updatedUser.balance });
   } catch (error) {
+    console.error("Error during ticket cancellation:", error); // Log the error for debugging
     return res.status(500).send({ error: "Internal server error" });
   }
 });
+
+
+
 
 //++ Function to delete a lottery
 export const cancelLottery = asyncHandler(async (req, res) => {
@@ -321,8 +333,9 @@ export const cancelLottery = asyncHandler(async (req, res) => {
       lotteryType === "Fundraising" ? "lotteryFundraising" : "lotteryClassic"
     ].findUnique({
       where: { id: lotteryId },
-      select: { price: true, lotteryStatus: true } // Include status for checking
+      select: { price: true, lotteryStatus: true }, // Include status for checking
     });
+
 
     if (!lottery) {
       return res.status(404).send({ error: "Lottery not found" });
@@ -333,6 +346,7 @@ export const cancelLottery = asyncHandler(async (req, res) => {
       return res.status(400).send({ error: "Lottery must be 'Open' to cancel." });
     }
 
+
     // Stop and remove any scheduled jobs for this lottery
     if (scheduledJobs.has(lotteryId)) {
       scheduledJobs.get(lotteryId).stop();
@@ -341,46 +355,59 @@ export const cancelLottery = asyncHandler(async (req, res) => {
 
     // Calculate refund per ticket and group refunds by user
     const tickets = await prisma.ticket.findMany({ where: { lotteryId } });
-    const userRefunds = tickets.reduce((acc, { userId }) => {
-      acc[userId] = (acc[userId] || 0) + lottery.price;
+
+
+    const userRefunds = tickets.reduce((acc, { userEmail }) => {
+      acc[userEmail] = (acc[userEmail] || 0) + lottery.price;
       return acc;
     }, {});
+
 
     // Perform the deletion, refunds, and transaction creation within a transaction
     await prisma.$transaction([
       // Refund users and log transactions
-      ...Object.entries(userRefunds).flatMap(([userId, refundAmount]) => [
+      ...Object.entries(userRefunds).flatMap(([userEmail, refundAmount]) => [
         prisma.user.update({
-          where: { id: userId },
-          data: { balance: { increment: refundAmount } },
+          where: { email: userEmail },
+          data: { balance: { increment: refundAmount } }, // Ensure 'balance' is a field of type Decimal or Int in your schema
         }),
         prisma.transaction.create({
           data: {
             amount: refundAmount,
             transactionType: "CancelTicket",
-            user: { connect: { id: userId } },
+            user: { connect: { email: userEmail } },
             createdAt: new Date(),
           },
         }),
       ]),
-      // Delete associated tickets and the lottery
+      // Delete associated tickets
       prisma.ticket.deleteMany({ where: { lotteryId } }),
+      // Delete the lottery
       prisma[lotteryType === "Fundraising" ? "lotteryFundraising" : "lotteryClassic"].delete({
         where: { id: lotteryId },
       }),
     ]);
 
+
     // Fetch the updated balance for the user who canceled the lottery
-    const { balance } = await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email },
       select: { balance: true },
     });
 
-    return res.status(200).send({ message: "Lottery deleted successfully.", balance });
+    if (!user) {
+      return res.status(404).send({ error: "User not found" });
+    }
+
+
+    return res.status(200).send({ message: "Lottery deleted successfully.", balance: user.balance });
   } catch (error) {
+    console.error("Error during lottery cancellation:", error.message);
     return res.status(500).send({ error: "Internal server error" });
   }
 });
+
+
 
 //++ Function to update user details
 export const updateUserProfile = asyncHandler(async (req, res) => {
@@ -508,7 +535,7 @@ export const getUserTransactions = asyncHandler(async (req, res) => {
 //++ Function to delete a "Like" lottery
 export const cancelLikeLottery = asyncHandler(async (req, res) => {
   try {
-    const {lotteryId } = req.body.data;
+    const { lotteryId } = req.body.data;
 
     // Validate required input
     if (!lotteryId) {
