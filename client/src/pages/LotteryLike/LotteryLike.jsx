@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { getLotteryLike, CancelLotteryLike, getAllTicketsForLottery } from "../../utils/api";
 import { PuffLoader } from "react-spinners";
 import { Box, Card, CardContent, Typography, Collapse, IconButton, Button } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import UserDetailContext from "../../context/UserDetailContext";
 import ParticipantsModal from "../../components/participantsModal/participantsModal";
