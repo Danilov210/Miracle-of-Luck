@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 
 const LotteriesMenuPage = () => {
   // Define an array of links corresponding to the slides
-  const links = ["/lotteries/like", "/lotteries/like", "/lotteries/like"];
+  const links = ["/lotteries/LotteryLike", "/lotteries/LotteryFundraising", "/lotteries/LotteryClassic"];
 
   return (
     <section className="r-wrapper">

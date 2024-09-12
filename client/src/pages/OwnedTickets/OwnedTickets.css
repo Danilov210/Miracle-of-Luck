@@ -1,0 +1,27 @@
+.ticket-container {
+    margin-top: 20px;
+    border-top: 1px solid #ddd;
+    padding-top: 10px;
+  }
+  
+  .ticket-container h3 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: bold;
+  }
+  .ticket-id {
+    font-size: 12px;
+    color: #333;
+    margin-top: 8px;
+    text-align: center; /* Center the text horizontally */
+    display: flex; /* Use flexbox to center within container */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+  }
+    
+  .no-tickets-message {
+    color: #ff0000; /* Change to desired color */
+    font-size: 1.2rem; /* Adjust font size */
+    margin-top: 20px; /* Add some margin if needed */
+    text-align: center;
+  }

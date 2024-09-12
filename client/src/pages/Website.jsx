@@ -1,10 +1,10 @@
 import React, { useRef } from "react";
-import CreateLottery from "../components/CreateLottery/CreateLottery";
+import CreateMenuPage from "../pages/CreateMenuPage/CreateMenuPage";
 import Contact from "../components/Contact/Contact";
 import GetStarted from "../components/GetStarted/GetStarted";
 import Hero from "../components/Hero/Hero";
-import LotteriesMenu from "../pages/LotteriesMenu/LotteriesMenu";
-import Results from "../components/Results/Results";
+import LotteriesMenuPage from "../pages/LotteriesMenuPage/LotteriesMenuPage";
+import ResultsMenuPage from "../pages/ResultsMenuPage/ResultsMenuPage";
 
 const Website = () => {
   const resultsRef = useRef(null);
@@ -15,9 +15,9 @@ const Website = () => {
         <div className="white-gradient" />
         <Hero />
       </div>
-      <LotteriesMenu />
-      <Results />
-      <CreateLottery />
+      <LotteriesMenuPage />
+      <ResultsMenuPage />
+      <CreateMenuPage />
       <Contact />
       <GetStarted />
     </div>

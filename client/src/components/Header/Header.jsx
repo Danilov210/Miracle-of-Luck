@@ -1,24 +1,18 @@
 import React, { useEffect, useState } from "react";
 import "./Header.css";
 import { BiMenuAltRight } from "react-icons/bi";
-import { getMenuStyles } from "../../utils/common";
 import useHeaderColor from "../../hooks/useHeaderColor";
 import OutsideClickHandler from "react-outside-click-handler";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import ProfileMenu from "../ProfileMenu/ProfileMenu";
-import useAuthCheck from "../../hooks/UseAuthCheck";
 
 const Header = () => {
   const [isScreenSmall, setIsScreenSmall] = useState(window.innerWidth <= 800);
   const [menuOpened, setMenuOpened] = useState(false);
   const headerColor = useHeaderColor();
-  const [modalOpened, setModalOpened] = useState(false);
   const { loginWithRedirect, isAuthenticated, user, logout } = useAuth0();
-  const { validateLogin } = useAuthCheck();
-  const navigate = useNavigate(); // Use useNavigate hook her
 
-  // Update isScreenSmall when the window is resized
   useEffect(() => {
     const handleResize = () => {
       setIsScreenSmall(window.innerWidth <= 800);
@@ -26,35 +20,34 @@ const Header = () => {
 
     window.addEventListener("resize", handleResize);
 
-    // Clean up the event listener on component unmount
     return () => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
 
-  const getMenuStyles = (menuOpened) => {
-    if (document.documentElement.clientWidth <= 800) {
-      return { right: !menuOpened && "-100%" };
-    }
+  const handleLogin = () => {
+    loginWithRedirect({
+      redirectUri: window.location.origin,
+      appState: { targetUrl: window.location.pathname }, // This will return the user to the page they were on after logging in
+      authorizationParams: {
+        screen_hint: "login", // This will show the login page instead of the signup page
+      },
+    });
   };
 
-  const handleAddLotteryClick = () => {
-    if (validateLogin()) {
-      setModalOpened(true);
-    }
+  const getMenuStyles = (menuOpened) => ({
+    right: document.documentElement.clientWidth <= 800 && !menuOpened ? "-100%" : "0",
+  });
+
+  const handleMenuClose = () => {
+    setMenuOpened(false);
   };
 
   return (
     <section className="h-wrapper" style={{ background: headerColor }}>
       <div className="flexCenter paddings innerWidh h-container">
-        {/* logo */}
         <Link to="/">
-          <img
-            src="./BlackLogo.jpg"
-            alt="logo"
-            width={100}
-            style={{ borderRadius: "10%" }}
-          />
+          <img src="./BlackLogo.jpg" alt="logo" width={100} style={{ borderRadius: "10%" }} />
         </Link>
 
         <OutsideClickHandler
@@ -63,48 +56,37 @@ const Header = () => {
           }}
         >
           <div className="flexCenter h-menu" style={getMenuStyles(menuOpened)}>
-            {/* Show login/logout button first on small screens */}
-            {isScreenSmall &&
-              (!isAuthenticated ? (
-                <button
-                  className="button button-green"
-                  onClick={loginWithRedirect}
-                >
+            {isScreenSmall ? (
+              !isAuthenticated ? (
+                <button className="button button-green" onClick={handleLogin}>
                   Login
                 </button>
               ) : (
                 <ProfileMenu user={user} logout={logout} />
-              ))}
+              )
+            ) : null}
 
-            <NavLink to="/lotteries">
+            <NavLink to="/lotteries" onClick={handleMenuClose}>
               <button className="button button-blue">Lotteries</button>
             </NavLink>
-            <Link to="/results">
+            <Link to="/results" onClick={handleMenuClose}>
               <button className="button button-blue">Results</button>
             </Link>
 
-            <Link to="/create">
+            <Link to="/create" onClick={handleMenuClose}>
               <button className="button button-blue">Create Lottery</button>
             </Link>
 
-            {/* Show login/logout button normally on larger screens */}
-            {!isScreenSmall &&
-              (!isAuthenticated ? (
-                <button
-                  className="button button-green"
-                  onClick={loginWithRedirect}
-                >
-                  Login
-                </button>
-              ) : (
-                <ProfileMenu user={user} logout={logout} />
-              ))}
+            {!isScreenSmall && !isAuthenticated ? (
+              <button className="button button-green" onClick={handleLogin}>
+                Login
+              </button>
+            ) : (
+              !isScreenSmall && <ProfileMenu user={user} logout={logout} />
+            )}
           </div>
         </OutsideClickHandler>
-        <div
-          className="menu-icon"
-          onClick={() => setMenuOpened((prev) => !prev)}
-        >
+        <div className="menu-icon" onClick={() => setMenuOpened((prev) => !prev)}>
           <BiMenuAltRight size={30} />
         </div>
       </div>

@@ -1,14 +1,27 @@
 import express from "express";
+import jwtCheck from "../config/auth0Config.js";
 import {
-  createResidency,
-  getAllLotteries,
-  getResidency,
-} from "../controllers/ResidencyController.js";
+  createLotteryLike,
+  createLotteryFundraising,
+  createLotteryClassic,
+  getAllLotteriesLike,
+  getAllLotteriesFundraising,
+  getAllLotteriesClassic,
+  getLotteryLike,
+  getLotteryFundraising,
+  getLotteryClassic,
+  getAllTicketsForLottery
+} from "../controllers/LotteryController.js";
 
 const router = express.Router();
-
-router.post("/create", createResidency);
-router.get("/alllotterylike", getAllLotteries);
-router.get("/:id", getResidency);
-
+router.post("/createLike", createLotteryLike);
+router.post("/createFundraising", createLotteryFundraising);
+router.post("/createClassic", createLotteryClassic);
+router.get("/alllotterylike", getAllLotteriesLike);
+router.get("/alllotteryfundraising", getAllLotteriesFundraising);
+router.get("/alllotteryclassic", getAllLotteriesClassic);
+router.get("/LotteryLike/:id", getLotteryLike);
+router.get("/LotteryFundraising/:id", getLotteryFundraising);
+router.get("/LotteryClassic/:id", getLotteryClassic);
+router.get("/Alltickets/:id", getAllTicketsForLottery);
 export { router as lotteryRoute };

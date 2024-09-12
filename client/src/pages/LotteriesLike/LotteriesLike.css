@@ -8,3 +8,19 @@
   border: 1px solid rgba(120, 120, 120, 0.374);
   flex-wrap: nowrap;
 }
+.lottery-container .search-bar .button{
+  border-radius: 30px;
+  font-size: 12px;
+  padding: 10px 15px;
+}
+
+.lottery-container .search-bar input{
+  width: 70%;
+}
+
+.no-lotteries-message {
+  color: #ff0000; /* Change to desired color */
+  font-size: 1.2rem; /* Adjust font size */
+  margin-top: 20px; /* Add some margin if needed */
+  text-align: center;
+}

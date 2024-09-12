@@ -1,12 +1,20 @@
-import React from "react";
-import "./LotteriesLike.css";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import SearchBar from "../../components/SearchBar/SearchBar";
-import useLotteries from "../../hooks/useLotteries";
+import "./LotteriesLike.css";
+import useLotteriesLike from "../../hooks/useLotteries";
 import { PuffLoader } from "react-spinners";
-import LotteryLikeCard from "../../components/LotteryLikeCard/LotteryLikeCard"
+import LotteryLikeCard from "../../components/LotteryLikeCard/LotteryLikeCard";
 
 const LotteriesLike = () => {
-  const { data, isError, isLoading } = useLotteries();
+  const { data, isError, isLoading } = useLotteriesLike();
+  const [filter, setFilter] = useState("");
+  const location = useLocation();
+
+  // Determine if the user came from the "Results" or "Lotteries" page
+  const isFromResultsPage = location.pathname.includes("/results");
+  const isFromLotteriesPage = location.pathname.includes("/lotteries");
+
   if (isError) {
     return (
       <div className="wrapper">
@@ -14,27 +22,46 @@ const LotteriesLike = () => {
       </div>
     );
   }
+
   if (isLoading) {
     return (
-      <div className="wrepper flexCenter" style={{ height: "60vh" }}>
-        <PuffLoader
-          height="80"
-          width="80"
-          radius={1}
-          color="4066ff"
-          aria-label="puff-loading"
-        />
+      <div className="wrapper flexCenter" style={{ height: "60vh" }}>
+        <PuffLoader color="#4066ff" size={80} aria-label="Loading Spinner" />
       </div>
     );
   }
+
+  // Filter data based on the navigation source and user search input
+  const filteredData = data
+    .filter((lottery) =>
+      ["title", "description", "hosted", "paticipationdescription", "link", "lotteryStatus"]
+        .some((key) =>
+          String(lottery[key])?.toLowerCase().includes(filter.toLowerCase())
+        )
+    )
+    .filter((lottery) => {
+      // Show only closed lotteries if coming from the "Results" page
+      if (isFromResultsPage) return lottery.lotteryStatus === "Closed";
+      // Show only open lotteries if coming from the "Lotteries" page
+      if (isFromLotteriesPage) return lottery.lotteryStatus === "Open";
+      // Otherwise, show all lotteries
+      return true;
+    });
+
   return (
     <div className="wrapper">
-      <div className="flexColCenter paddings innerWidht lottery-container">
-        <SearchBar />
-        <div className="paddings flexCenter lotteries">
-          {data.map((card, i) => (
-            <LotteryLikeCard card={card} key={i} />
-          ))}
+      <div className="flexColCenter paddings innerWidth lottery-container">
+        <SearchBar filter={filter} setFilter={setFilter} />
+        <div className="paddings flexCenter lottery">
+          {filteredData.length > 0 ? (
+            filteredData.map((card, i) => (
+              <LotteryLikeCard card={card} key={i} />
+            ))
+          ) : (
+            <div className="no-lotteries-message">
+              No available lotteries exist.
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -1,16 +1,13 @@
 .search-bar {
-  background-color: white;
-  border: none;
-  padding: 0.1rem 0.1rem; /* Decrease padding for a smaller search bar */
-  width: 295px;
-  font-size: 0.875rem; /* Optional: Decrease the font size */
-  border-radius: 20px;
+  width: 100%;
+  max-width: 400px; /* Adjust the width as needed */
+  padding: 10px;
+  font-size: 16px;
+  text-align: center; /* Centers the text inside the input field */
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box; /* Ensures padding and border are included in the width */
+  outline: none;
+  margin: auto; /* Centers the input itself in its container */
 }
 
-.search-bar > input {
-  flex: 1;
-  border: none;
-  outline: none;
-  padding: 0.25rem; /* Decrease padding inside the input field */
-  font-size: 0.875rem; /* Match the font size with the search bar */
-}

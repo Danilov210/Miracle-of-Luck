@@ -1,0 +1,32 @@
+/* Styling for the Upload Zone */
+.uploadZone {
+    cursor: pointer; /* Make it look clickable */
+    border: 2px dashed #ccc; /* Dashed border to indicate drop/upload area */
+    border-radius: 10px; /* Rounded corners for aesthetics */
+    padding: 10px; /* Space around the content */
+    transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+    margin-bottom: 20px; /* Spacing at the bottom */
+    width: 150px; /* Fixed width */
+    height: 150px; /* Fixed height */
+  }
+  
+  /* Hover effect for Upload Zone */
+  .uploadZone:hover {
+    background-color: #f0f0f0; /* Light grey background on hover */
+    border-color: #007bff; /* Change border color on hover */
+  }
+  
+  /* Styling for the Avatar */
+  .avatar-large {
+    width: 100px; /* Fixed width for avatar */
+    height: 100px; /* Fixed height for avatar */
+    border-radius: 50%; /* Circular shape */
+    object-fit: cover; /* Ensures the image covers the avatar area without distortion */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    transition: transform 0.3s ease; /* Smooth transition for hover effect */
+  }
+  
+  /* Hover effect for Avatar */
+  .uploadZone:hover .avatar-large {
+    transform: scale(1.05); /* Slight scaling effect on hover */
+  }
