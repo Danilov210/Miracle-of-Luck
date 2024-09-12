@@ -2,7 +2,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 export const api = axios.create({
-  baseURL: "https://miracle-of-luck-client-gwsbc2qim-alexanders-projects-ae0018bb.vercel.app/api",
+  baseURL: "https://miracle-of-luck.vercel.app/api",
 });
 
 export const createUser = async (data, token) => {
