@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getLotteryLike, CancelLotteryLike, getAllTicketsForLottery } from "../../utils/api";
 import { PuffLoader } from "react-spinners";
-import { Box, Card, CardContent, Typography, Collapse, IconButton, Button } from "@mui/material";
+import { Box, Card, CardContent, Typography, Collapse, IconButton } from "@mui/material";
 import UserDetailContext from "../../context/UserDetailContext";
 import ParticipantsModal from "../../components/participantsModal/participantsModal";
 import "./LotteryLike.css";
