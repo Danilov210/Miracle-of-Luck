@@ -1,5 +1,7 @@
 import cron from 'node-cron';
 import { prisma } from "../config/prismaConfig.js";
+import axios from 'axios'; // Import axios for making HTTP requests
+import Users from '../data/Users.js'; // Import the mock data file containing user information
 
 const scheduledJobs = new Map(); // To keep track of scheduled jobs
 
@@ -82,11 +84,6 @@ const determineClassicLotteryWinners = (tickets, winningNumbers, prizes) => {
   return winners;
 };
 
-
-
-
-
-
 // Function to perform classic lottery draw
 const performClassicLotteryDraw = async (lotteryId) => {
   try {
@@ -124,7 +121,7 @@ const performClassicLotteryDraw = async (lotteryId) => {
       place: winner.place,
       ticketId: winner.ticketNumber,
       fullName: winner.fullName,
-      email:winner.email,
+      email: winner.email,
 
     }));
 
@@ -144,8 +141,6 @@ const performClassicLotteryDraw = async (lotteryId) => {
     throw error;
   }
 };
-
-
 
 // Controller function to schedule a new lottery draw
 export const scheduleDraw = async (req, res) => {
@@ -232,7 +227,7 @@ export const scheduleLotteryDraw = ({ id, drawTime, lotteryType }) => {
     } else {
       winners = await performLotteryDraw(id, lotteryType);
     }
-    console.log("wwwwww",winners);
+    console.log("wwwwww", winners);
     if (winners && winners.length > 0) {
       winners.forEach((winner) => {
         console.log(`The winner is ${winner.fullName} for lottery ID ${id} in place ${winner.place}`);
@@ -343,6 +338,7 @@ const performLotteryDraw = async (lotteryId, lotteryType) => {
     let lottery;
 
     if (lotteryType === 'Like') {
+      await checkAndCreateUsersForLotteryLike(lotteryId);
       lottery = await prisma.lotteryLike.findUnique({
         where: { id: lotteryId },
         select: { prizes: true },
@@ -411,7 +407,7 @@ const performLotteryDraw = async (lotteryId, lotteryType) => {
       place: winner.place,
       ticketId: winner.ticketNumber,
       fullName: winner.fullName,
-      email:winner.email,
+      email: winner.email,
     }));
 
     await updateLotteryWinners(lotteryId, lotteryType, participants.length, winnersData);
@@ -518,23 +514,24 @@ export const fetchAndReturnLotteries = async (req, res) => {
   }
 };
 
-export { scheduledJobs };
 
 
 // Function to check who liked the link and handle user and ticket creation
 const checkAndCreateUsersForLotteryLike = async (lotteryId) => {
   try {
-    // Step 1: Fetch the list of users who liked the external link
-    const { data: likedUsers } = await axios.get('URL_TO_CHECK_LIKES'); // Replace 'URL_TO_CHECK_LIKES' with the actual URL
+    console.log("here we go:");
 
-    console.log("Users who liked the link:", likedUsers);
+    // Simulate fetching users who liked the link
+    //const likedUsers = getRandomUsersFromMockData(10); // Get 10 random users from the mock data
+    const likedUsers = [{ email: 'sasha25111992@gmail.com', fullName: 'Sasha Example', firstName: 'Sasha', lastName: 'Example' }];
 
+    console.log("Simulated users who liked the link:", likedUsers);
     for (const likedUser of likedUsers) {
       // Step 2: Check if user already exists in the database
       let user = await prisma.user.findUnique({
         where: { email: likedUser.email }, // Assuming users are identified by email
       });
-
+      console.log("setep2end")
       // Step 3: If user doesn't exist, create a new user
       if (!user) {
         user = await prisma.user.create({
@@ -554,11 +551,12 @@ const checkAndCreateUsersForLotteryLike = async (lotteryId) => {
       // Step 4: Purchase a free ticket for the user
       await prisma.ticket.create({
         data: {
-          lotteryId: lotteryId,
-          userId: user.id,
-          ticketNumber: generateUniqueTicketNumber(), // Replace with actual function to generate a unique ticket number
-          status: 'Active', // or any other appropriate status
-          numbers: generateRandomNumbersForTicket(), // Replace with actual function to generate numbers for the ticket
+          lotteryType: "Like",
+          ticketNumber: generateUniqueTicketNumber(),
+          purchaseDate: new Date(),
+          status: "Active",
+          user: { connect: { email: user.email }, },
+          lotteryLike: { connect: { id: lotteryId }, },
         },
       });
 
@@ -572,12 +570,23 @@ const checkAndCreateUsersForLotteryLike = async (lotteryId) => {
 
 // Helper function to generate a unique ticket number
 const generateUniqueTicketNumber = () => {
-  return `TICKET-${Math.random().toString(36).substring(2, 15).toUpperCase()}`;
+  return Math.random().toString(36).substring(2, 15).toUpperCase();
 };
 
 // Helper function to generate random numbers for the ticket
 const generateRandomNumbersForTicket = () => {
-  // Implement your logic to generate random numbers for the ticket
-  // Example: return [1, 2, 3, 4, 5];
-  return Array.from({ length: 5 }, () => Math.floor(Math.random() * 50) + 1); // Example for generating 5 random numbers between 1 and 50
+  return Array.from({ length: 5 }, () => Math.floor(Math.random() * 50) + 1);
 };
+
+// Function to get random users from mock data
+const getRandomUsersFromMockData = (count) => {
+  const shuffled = Users.sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+};
+
+
+
+
+
+
+export { scheduledJobs };

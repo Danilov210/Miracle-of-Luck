@@ -92,24 +92,24 @@ const LotteryFundraising = () => {
     onSettled: () => setIsCancelLotteryDisabled(true),
   });
 
-    // Fetch all participants for the lottery
-    const fetchAllParticipants = async () => {
-      setIsButtonDisabled(true);
-      try {
-          const response = await getAllTicketsForLottery(id);
-          if (response.length === 0) {
-              // No participants found
-              toast.info("No participants found", { position: "bottom-right" });
-          } else {
-              // Participants found, open modal
-              setParticipants(response);
-              setParticipantsModalOpened(true);
-          }
-      } catch (error) {
-          toast.error("Failed to fetch participants", { position: "bottom-right" });
-      } finally {
-          setIsButtonDisabled(false);
+  // Fetch all participants for the lottery
+  const fetchAllParticipants = async () => {
+    setIsButtonDisabled(true);
+    try {
+      const response = await getAllTicketsForLottery(id);
+      if (response.length === 0) {
+        // No participants found
+        toast.info("No participants found", { position: "bottom-right" });
+      } else {
+        // Participants found, open modal
+        setParticipants(response);
+        setParticipantsModalOpened(true);
       }
+    } catch (error) {
+      toast.error("Failed to fetch participants", { position: "bottom-right" });
+    } finally {
+      setIsButtonDisabled(false);
+    }
   };
 
   const { title, description, hosted, startDate, endDate, price, prizes, image, paticipationdescription, lotteryStatus, participantCount, winnersTickets } = data || {};
@@ -222,30 +222,32 @@ const LotteryFundraising = () => {
 
 
         {/* Number of Participants Section */}
-        {participantCount ? (
-          <Card className="participants-count-card">
-            <CardContent>
-              <Typography variant="h6">Number of Participants:</Typography>
-              <Typography
-                variant="body1"
-                style={{ fontSize: "18px", fontWeight: "bold", marginTop: "10px" }}
-              >
-                {participantCount}
-              </Typography>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="participants-count-card">
-            <CardContent>
-              <Typography variant="h6">Number of Participants:</Typography>
-              <Typography
-                variant="body1"
-                style={{ fontSize: "18px", fontWeight: "bold", marginTop: "10px" }}
-              >
-                No participants
-              </Typography>
-            </CardContent>
-          </Card>
+        {lotteryStatus === "Closed" && (
+          participantCount ? (
+            <Card className="participants-count-card">
+              <CardContent>
+                <Typography variant="h6">Number of Participants:</Typography>
+                <Typography
+                  variant="body1"
+                  style={{ fontSize: "18px", fontWeight: "bold", marginTop: "10px" }}
+                >
+                  {participantCount}
+                </Typography>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="participants-count-card">
+              <CardContent>
+                <Typography variant="h6">Number of Participants:</Typography>
+                <Typography
+                  variant="body1"
+                  style={{ fontSize: "18px", fontWeight: "bold", marginTop: "10px" }}
+                >
+                  No participants
+                </Typography>
+              </CardContent>
+            </Card>
+          )
         )}
 
         {/* User Prize Section (Only display if ticketStatus is "won") */}

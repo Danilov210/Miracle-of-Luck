@@ -19,7 +19,7 @@ import {
 const router = express.Router();
 
 // Define routes
-router.post("/register", jwtCheck, createUser);
+router.post("/register", createUser);
 router.post("/BuyTicketFundraising", buyTicketFundraising);
 router.post("/BuyTicketClassic", buyTicketClassic);
 router.post("/UserOwnedLottories", getUserOwnedLottories);

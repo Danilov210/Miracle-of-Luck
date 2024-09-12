@@ -16,6 +16,9 @@ const LotteryLike = () => {
     const location = useLocation();
     const { state } = location;
     const ticketId = state?.ticketId;
+    const ticketNumber = state?.ticketNumber;
+    const ticketStatus = state?.ticketStatus;
+
     const cancelLotteryOption = state?.cancelLotteryOption;
     const navigate = useNavigate();
 
@@ -30,6 +33,8 @@ const LotteryLike = () => {
     const [isButtonDisabled, setIsButtonDisabled] = useState(false);
     const [isCancelLotteryDisabled, setIsCancelLotteryDisabled] = useState(false);
     const [winnersExpanded, setWinnersExpanded] = useState(false);
+    const [userPrizeExpanded, setUserPrizeExpanded] = useState(false); // State for user prize section
+
 
     const { setUserDetails } = useContext(UserDetailContext);
 
@@ -197,36 +202,62 @@ const LotteryLike = () => {
                 )}
 
                 {/* Number of Participants Section */}
-                {participantCount ? (
-                    <Card className="participants-count-card">
-                        <CardContent>
-                            <Typography variant="h6">Number of Participants:</Typography>
-                            <Typography
-                                variant="body1"
-                                style={{ fontSize: "18px", fontWeight: "bold", marginTop: "10px" }}
-                            >
-                                {participantCount}
-                            </Typography>
-                        </CardContent>
-                    </Card>
-                ) : (
-                    <Card className="participants-count-card">
-                        <CardContent>
-                            <Typography variant="h6">Number of Participants:</Typography>
-                            <Typography
-                                variant="body1"
-                                style={{ fontSize: "18px", fontWeight: "bold", marginTop: "10px" }}
-                            >
-                                No participants
-                            </Typography>
-                        </CardContent>
-                    </Card>
+                {lotteryStatus === "Closed" && (
+                    participantCount ? (
+                        <Card className="participants-count-card">
+                            <CardContent>
+                                <Typography variant="h6">Number of Participants:</Typography>
+                                <Typography
+                                    variant="body1"
+                                    style={{ fontSize: "18px", fontWeight: "bold", marginTop: "10px" }}
+                                >
+                                    {participantCount}
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                    ) : (
+                        <Card className="participants-count-card">
+                            <CardContent>
+                                <Typography variant="h6">Number of Participants:</Typography>
+                                <Typography
+                                    variant="body1"
+                                    style={{ fontSize: "18px", fontWeight: "bold", marginTop: "10px" }}
+                                >
+                                    No participants
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                    )
                 )}
+
 
                 {lotteryStatus === "Open" && (
                     <Typography className="primary3Text" variant="body2">
                         To enter this draw, complete all conditions on the provided link, and you'll be automatically entered.
                     </Typography>
+                )}
+
+                {/* User Prize Section (Only display if ticketStatus is "won") */}
+                {ticketStatus === "Won" && userWinning && (
+                    <Card className="prize-card">
+                        <CardContent>
+                            <Box display="flex" justifyContent="space-between" alignItems="center">
+                                <Typography variant="h6">Congratulations! You Won:</Typography>
+                                <IconButton onClick={() => setUserPrizeExpanded(!userPrizeExpanded)}>
+                                    {userPrizeExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                                </IconButton>
+                            </Box>
+                            <Collapse in={userPrizeExpanded}>
+                                <Typography variant="body1" style={{ fontWeight: 'bold', marginTop: '10px' }}>
+                                    Place: {userWinning.place}
+                                </Typography>
+                                <Typography variant="body1" style={{ fontWeight: 'bold' }}>
+                                    Prize: {prizes.find((prize) => prize.place === userWinning?.place)?.description} ({prizes.find((prize) => prize.place === userWinning?.place)?.icon})
+                                </Typography>
+
+                            </Collapse>
+                        </CardContent>
+                    </Card>
                 )}
                 {/* Actions Section */}
                 <Box className="flexColCenter NavBut">
@@ -250,17 +281,6 @@ const LotteryLike = () => {
                         )}
                     </Box>
                 </Box>
-
-                {/* Cancel Lottery Button */}
-                {cancelLotteryOption && (<button
-                    className="button button-red"
-                    onClick={() => cancelLotteryMutation.mutate()}
-                    disabled={isCancelLotteryDisabled}
-                >
-                    Cancel Lottery
-                </button>
-                )}
-
 
                 {participantsModalOpened && (
                     <ParticipantsModal
