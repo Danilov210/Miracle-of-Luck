@@ -263,10 +263,10 @@ export const CancelUserTicket = async (ticketId) => {
 
 
 
-export const CancelLottery = async (email,lotteryId, lotteryType) => {
+export const CancelLottery = async (email, lotteryId, lotteryType) => {
   try {
     const response = await api.post('/user/CancelLottery', {
-      data: {email, lotteryId, lotteryType }, // Send both lotteryId and lotteryType
+      data: { email, lotteryId, lotteryType }, // Send both lotteryId and lotteryType
     });
     return response;
   } catch (error) {
@@ -358,7 +358,7 @@ export const getAllTicketsForLottery = async (lotteryId) => {
 export const CancelLotteryLike = async (lotteryId) => {
   try {
     const response = await api.post('/user/CancelLotteryLike', {
-      data: {lotteryId }, // Send both lotteryId and lotteryType
+      data: { lotteryId }, // Send both lotteryId and lotteryType
     });
     return response;
   } catch (error) {
@@ -366,36 +366,3 @@ export const CancelLotteryLike = async (lotteryId) => {
     throw new Error("Failed to cancel the lottery.");
   }
 };
-
-
-//////////////////////////////////////////////
-
-
-
-
-
-
-// Your access token (Make sure to replace with your actual access token)
-const accessToken = 'EAAqWjyf3PHkBO7Q6ZBO89lF304ZCDT78bUlyGnuF7vaQYXf2SHAC7RQvGUune8Re2DGWaiFRev78tTzZCaLm8Q5jWQuaFldB7iLKZCxDWiH7Y07W3GI838z7ZBrpVMbQMXJh6leBRcklJbHZAaiFfPTsVDV9GMTkJgs8EqMgNbZCUmC25o0le6feTGvIXZCJRJi3ndsBcZA0bqXEQDxaJJ8IZD'; // Replace with your valid access token
-
-/**
- * Function to get user data from Facebook Graph API
- * @returns {Promise<Object>} - A promise that resolves to the user data
- */
-export const getUserData = async () => {
-  try {
-    const response = await axios.get('https://graph.facebook.com/me', {
-      params: {
-        fields: 'id,name', // The fields you want to retrieve
-        access_token: accessToken // Pass the access token
-      }
-    });
-    console.log(response);
-    // Return the user data
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching data from Facebook Graph API:', error.message);
-    throw new Error('Failed to fetch data from Facebook Graph API');
-  }
-};
-
