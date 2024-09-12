@@ -1,11 +1,23 @@
 import React, { useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
-import { Close as CloseIcon } from "@mui/icons-material";
 import { Container, Dialog, DialogTitle, DialogContent, IconButton, Typography, Stepper, Step, StepLabel, TextField, Select, Box, MenuItem, Button } from "@mui/material";
 import { toast } from "react-toastify"; 
 import UploadImage from "../UploadImage/UploadImage";
 import { createLotteryClassic } from "../../utils/api";
 import "./CreateClassicModel.css";
+
+// Custom SVG icon component
+const CustomIcon = ({ path, label }) => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <path d={path} stroke="currentColor" strokeWidth="2" />
+    {label && <title>{label}</title>}
+  </svg>
+);
+
+// Define the Close SVG icon
+const CloseSVG = () => (
+  <CustomIcon path="M6 6L18 18M6 18L18 6" label="Close" />
+);
 
 const CreateClassicModel = ({ open, setOpen }) => {
     const { user, getAccessTokenSilently } = useAuth0();
@@ -62,7 +74,7 @@ const CreateClassicModel = ({ open, setOpen }) => {
             if (response?.data?.message) {
                 toast.success(response.data.message, {
                     position: "bottom-right",
-                    autoClose: 3000, // Auto close after 3 seconds
+                    autoClose: 3000,
                 });
 
                 setTimeout(() => window.location.reload(), 1000);
@@ -77,7 +89,6 @@ const CreateClassicModel = ({ open, setOpen }) => {
         }
     };
 
-    // Additional check to ensure endDate is in the future
     const isEndDateValid = lotteryDetails.endDate && new Date(lotteryDetails.endDate) > new Date();
 
     const canProceedToNextStep = isEndDateValid && lotteryDetails.paticipationdescription.trim() && lotteryDetails.price > 0 && lotteryDetails.availableNumberRange > 0 && lotteryDetails.drawnNumbersCount > 0 && lotteryDetails.availableNumberRange > lotteryDetails.drawnNumbersCount;
@@ -96,7 +107,7 @@ const CreateClassicModel = ({ open, setOpen }) => {
     return (
         <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="md">
             <IconButton onClick={() => setOpen(false)} style={{ position: "absolute", right: 8, top: 8, color: "black" }}>
-                <CloseIcon />
+                <CloseSVG />
             </IconButton>
 
             <DialogTitle className="primaryText" style={{ textAlign: "center" }}>Create Lottery Classic</DialogTitle>
@@ -172,9 +183,8 @@ const CreateClassicModel = ({ open, setOpen }) => {
                                 <Button onClick={addPrize} variant="outlined" disabled={lotteryDetails.prizes.length >= lotteryDetails.drawnNumbersCount}>+ Add Another Prize</Button>
                                 <Button onClick={deleteLastPrize} variant="outlined" color="error" disabled={lotteryDetails.prizes.length === 1}>- Delete Last Prize</Button>
                             </Box>
-                            <Box className="flexColCenter NavBut" >
+                            <Box className="flexColCenter NavBut">
                                 <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2, mt: 2 }}>
-
                                     <button className="button button-green" onClick={prevStep}>Back</button>
                                     {lotteryDetails.prizes.every((prize) => prize.amount > 0) && <button className="button button-blue" onClick={handleFinish}>Finish</button>}
                                 </Box>

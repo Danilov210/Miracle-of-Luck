@@ -9,11 +9,17 @@ import {
   Grid,
   Box,
 } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
 import { toast } from "react-toastify";
 import { useMutation } from "react-query";
 import UserDetailContext from "../../context/UserDetailContext.js";
 import { BuyTicketClassic } from "../../utils/api.js";
+
+// Custom SVG icon to replace MUI CloseIcon
+const CloseSVG = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24">
+    <path d="M6 6L18 18M6 18L18 6" stroke="currentColor" strokeWidth="2" />
+  </svg>
+);
 
 const LotteryClassicTicketPurchase = ({
   opened,
@@ -92,7 +98,7 @@ const LotteryClassicTicketPurchase = ({
       >
         Purchase Ticket
         <IconButton onClick={() => setOpened(false)}>
-          <CloseIcon />
+          <CloseSVG />
         </IconButton>
       </DialogTitle>
       <DialogContent>

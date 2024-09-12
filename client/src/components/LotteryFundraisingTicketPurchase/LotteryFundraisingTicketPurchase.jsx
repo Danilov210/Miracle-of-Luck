@@ -6,7 +6,7 @@ import { useMutation } from "react-query";
 import UserDetailContext from "../../context/UserDetailContext.js";
 import { BuyTicketFundraising } from "../../utils/api.js";
 
-const LotteryClassicTicketPurchase = ({ opened, setOpened, lotteryId, email, ticketPrice }) => {
+const LotteryFundraisingTicketPurchase = ({ opened, setOpened, lotteryId, email, ticketPrice }) => {
   const [ticketNumber, setTicketNumber] = useState(1); // Default ticket number
   const {
     userDetails: { token, balance },
@@ -112,4 +112,4 @@ const LotteryClassicTicketPurchase = ({ opened, setOpened, lotteryId, email, tic
   );
 };
 
-export default LotteryClassicTicketPurchase;
+export default LotteryFundraisingTicketPurchase;

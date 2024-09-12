@@ -9,11 +9,22 @@ import useAuthCheck from "../../hooks/useAuthCheck";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useLocation } from "react-router-dom";
 import { Box, Card, CardContent, Typography, Collapse, IconButton, TextField } from "@mui/material";
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import UserDetailContext from "../../context/UserDetailContext";
 import LotteryFundraisingTicketPurchase from "../../components/LotteryFundraisingTicketPurchase/LotteryFundraisingTicketPurchase";
 import ParticipantsModal from "../../components/participantsModal/participantsModal";
+
+// SVG Icons (Replacements for MUI Icons)
+const ExpandMoreIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 16.5l-8-8 1.41-1.41L12 13.67l6.59-6.58L20 8.5z" />
+  </svg>
+);
+
+const ExpandLessIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z" />
+  </svg>
+);
 
 const LotteryFundraising = () => {
   const location = useLocation();
@@ -114,11 +125,9 @@ const LotteryFundraising = () => {
 
   const { title, description, hosted, startDate, endDate, price, prizes, image, paticipationdescription, lotteryStatus, participantCount, winnersTickets } = data || {};
 
-
   const userWinning = winnersTickets?.find((winner) => {
     return winner.ticketId === ticketNumber;
   });
-
 
   if (isLoading) return <div className="wrapper flexCenter paddings"><PuffLoader /></div>;
   if (isError) return <div className="wrapper flexCenter paddings">Error while fetching the lottery details</div>;
@@ -153,8 +162,6 @@ const LotteryFundraising = () => {
             </Collapse>
           </CardContent>
         </Card>
-
-
 
         {/* Participation Section with Expandable Panel */}
         <Card className="participation-card">
@@ -220,7 +227,6 @@ const LotteryFundraising = () => {
           </Card>
         )}
 
-
         {/* Number of Participants Section */}
         {lotteryStatus === "Closed" && (
           participantCount ? (
@@ -267,7 +273,6 @@ const LotteryFundraising = () => {
                 <Typography variant="body1" style={{ fontWeight: 'bold' }}>
                   Prize: {prizes.find((prize) => prize.place === userWinning?.place)?.description} ({prizes.find((prize) => prize.place === userWinning?.place)?.icon})
                 </Typography>
-
               </Collapse>
             </CardContent>
           </Card>

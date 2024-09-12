@@ -22,8 +22,20 @@ import UserDetailContext from "../../context/UserDetailContext";
 import { sendTransactionToDatabase, updateUserDetails } from "../../utils/api";
 import { toast } from "react-toastify";
 import { AiOutlineCloudUpload } from "react-icons/ai";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
 import "./UserDetails.css";
+
+// SVG Icons (Replacements for MUI Icons)
+const VisibilityIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="currentColor">
+    <path d="M12 6.5c-7 0-9.6 6-9.6 6s2.6 6 9.6 6 9.6-6 9.6-6-2.6-6-9.6-6zm0 10.2c-2.3 0-4.2-1.9-4.2-4.2s1.9-4.2 4.2-4.2 4.2 1.9 4.2 4.2-1.9 4.2-4.2 4.2zm0-6.7c-1.4 0-2.5 1.1-2.5 2.5s1.1 2.5 2.5 2.5 2.5-1.1 2.5-2.5-1.1-2.5-2.5-2.5z" />
+  </svg>
+);
+
+const VisibilityOffIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="currentColor">
+    <path d="M12 4.5c-7 0-9.6 6-9.6 6s2.6 6 9.6 6 9.6-6 9.6-6-2.6-6-9.6-6zm0 11.2c-1.8 0-3.4-.8-4.4-2.2.1-.1.2-.1.4-.2.5-.3 1.2-.5 1.9-.7.6-.2 1.1-.3 1.7-.5.6-.2 1.3-.3 2-.3.8 0 1.5.1 2.3.3.7.1 1.3.4 2 .7.3.1.6.3.9.5.3.1.6.2.9.2 0-.4-.1-.9-.4-1.3-.3-.5-.7-1.1-1.1-1.6-.5-.6-1.1-1.2-1.8-1.7-.7-.4-1.5-.8-2.3-1-1.5-.3-3.1-.1-4.4.6-.8.3-1.5.8-2.2 1.4-.6.5-1.2 1.1-1.6 1.8-.3.4-.6.9-.7 1.4 0 0-.1.1 0 0 .5.5 1.1 1 1.7 1.4.5.4 1.1.7 1.7.9.3.1.5.1.8.2.2.1.4.1.6.1s.4 0 .6-.1c.2 0 .5-.1.7-.2.6-.2 1.2-.5 1.8-.8.6-.3 1.2-.7 1.8-1.1z" />
+  </svg>
+);
 
 function formatDate(date) {
   if (!date) return "";
@@ -433,7 +445,7 @@ const UserDetails = () => {
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton onClick={() => setShowCvv((prev) => !prev)}>
-                        {showCvv ? <VisibilityOff /> : <Visibility />}
+                        {showCvv ? <VisibilityOffIcon /> : <VisibilityIcon />}
                       </IconButton>
                     </InputAdornment>
                   ),

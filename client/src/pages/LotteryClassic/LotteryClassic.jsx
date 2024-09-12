@@ -9,11 +9,22 @@ import useAuthCheck from "../../hooks/useAuthCheck";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useLocation } from "react-router-dom";
 import { Box, Card, CardContent, Typography, Collapse, IconButton } from "@mui/material";
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import UserDetailContext from "../../context/UserDetailContext";
 import LotteryClassicTicketPurchase from "../../components/LotteryClassicTicketPurchase/LotteryClassicTicketPurchase";
 import ParticipantsModal from "../../components/participantsModal/participantsModal";
+
+// SVG Icons (Replacements for MUI Icons)
+const ExpandMoreIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 16.5l-8-8 1.41-1.41L12 13.67l6.59-6.58L20 8.5z" />
+  </svg>
+);
+
+const ExpandLessIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z" />
+  </svg>
+);
 
 const LotteryClassic = () => {
   const location = useLocation();
@@ -43,7 +54,6 @@ const LotteryClassic = () => {
   const [prizesExpanded, setPrizesExpanded] = useState(false);
   const [winnersExpanded, setWinnersExpanded] = useState(false);
   const [userPrizeExpanded, setUserPrizeExpanded] = useState(false); // State for user prize section
-
 
   // Mutation to handle ticket cancellation
   const cancelTicketMutation = useMutation({
@@ -128,7 +138,6 @@ const LotteryClassic = () => {
     return winner.ticketId === ticketNumber;
   });
 
-
   if (isLoading) return <div className="wrapper flexCenter paddings"><PuffLoader /></div>;
   if (isError) return <div className="wrapper flexCenter paddings">Error while fetching the lottery classic details</div>;
 
@@ -150,9 +159,6 @@ const LotteryClassic = () => {
           </CardContent>
         </Card>
 
-
-
-
         {/* Description Section with Expandable Panel */}
         <Card className="description-card">
           <CardContent>
@@ -167,8 +173,6 @@ const LotteryClassic = () => {
             </Collapse>
           </CardContent>
         </Card>
-
-
 
         {/* Participation Section with Expandable Panel */}
         <Card className="participation-card">
@@ -206,7 +210,6 @@ const LotteryClassic = () => {
           </Card>
         )}
 
-
         {/* Winners Section with Expandable Panel (Visible Only When Lottery is Closed) */}
         {lotteryStatus === "Closed" && (
           <Card className="winners-card">
@@ -234,7 +237,6 @@ const LotteryClassic = () => {
             </CardContent>
           </Card>
         )}
-
 
         {/* Number of Participants Section */}
         {lotteryStatus === "Closed" && (
@@ -306,12 +308,10 @@ const LotteryClassic = () => {
                 <Typography variant="body1" style={{ fontWeight: 'bold' }}>
                   Prize: {prizes.find((prize) => prize.place === userWinning?.place)?.amount}$
                 </Typography>
-
               </Collapse>
             </CardContent>
           </Card>
         )}
-
 
         {/* Actions Section */}
         <Box className="flexColCenter NavBut">
