@@ -18,7 +18,7 @@ const CustomIcon = ({ path, label }) => (
 const CloseSVG = () => (
   <CustomIcon path="M6 6L18 18M6 18L18 6" />
 );
-///
+
 const iconOptions = [
     { label: "Phone", value: "Phone", icon: <CustomIcon path="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.11-.21 11.72 11.72 0 004.51 1.15 1 1 0 01.91 1v3.19a1 1 0 01-1 1A18 18 0 013 6a1 1 0 011-1h3.19a1 1 0 011 .91 11.72 11.72 0 001.15 4.51 1 1 0 01-.21 1.11l-2.2 2.2z" /> },
     { label: "Email", value: "Email", icon: <CustomIcon path="M2 4h20v16H2z M22 4L12 13 2 4" /> },
