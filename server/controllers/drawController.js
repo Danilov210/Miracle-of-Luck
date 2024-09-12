@@ -519,20 +519,15 @@ export const fetchAndReturnLotteries = async (req, res) => {
 // Function to check who liked the link and handle user and ticket creation
 const checkAndCreateUsersForLotteryLike = async (lotteryId) => {
   try {
-    console.log("here we go:");
+    const likedUsers = getRandomUsersFromMockData(10); 
 
-    // Simulate fetching users who liked the link
-    //const likedUsers = getRandomUsersFromMockData(10); // Get 10 random users from the mock data
-    const likedUsers = [{ email: 'sasha25111992@gmail.com', fullName: 'Sasha Example', firstName: 'Sasha', lastName: 'Example' }];
-
-    console.log("Simulated users who liked the link:", likedUsers);
     for (const likedUser of likedUsers) {
-      // Step 2: Check if user already exists in the database
+      //Check if user already exists in the database
       let user = await prisma.user.findUnique({
         where: { email: likedUser.email }, // Assuming users are identified by email
       });
       console.log("setep2end")
-      // Step 3: If user doesn't exist, create a new user
+      // If user doesn't exist, create a new user
       if (!user) {
         user = await prisma.user.create({
           data: {
@@ -548,7 +543,7 @@ const checkAndCreateUsersForLotteryLike = async (lotteryId) => {
         console.log(`User already exists: ${user.email}`);
       }
 
-      // Step 4: Purchase a free ticket for the user
+      // Purchase a free ticket for the user
       await prisma.ticket.create({
         data: {
           lotteryType: "Like",
@@ -573,19 +568,11 @@ const generateUniqueTicketNumber = () => {
   return Math.random().toString(36).substring(2, 15).toUpperCase();
 };
 
-// Helper function to generate random numbers for the ticket
-const generateRandomNumbersForTicket = () => {
-  return Array.from({ length: 5 }, () => Math.floor(Math.random() * 50) + 1);
-};
-
-// Function to get random users from mock data
+// Function to get random users data
 const getRandomUsersFromMockData = (count) => {
   const shuffled = Users.sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count);
 };
-
-
-
 
 
 
