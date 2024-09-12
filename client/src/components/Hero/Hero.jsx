@@ -4,7 +4,7 @@ import CountUp from 'react-countup'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom';
 
-
+///
 export default function Hero() {
     const navigate = useNavigate(); // Initialize the navigate function
 
