@@ -1,4 +1,5 @@
 import cron from 'node-cron';
+import nodemailer from 'nodemailer';
 import { prisma } from "../config/prismaConfig.js";
 import axios from 'axios'; // Import axios for making HTTP requests
 import Users from '../data/Users.js'; // Import the mock data file containing user information
@@ -116,6 +117,11 @@ const performClassicLotteryDraw = async (lotteryId) => {
     } else {
       console.log(`Winners for lottery ID ${lotteryId}:`, winners);
     }
+
+    // Send email notifications to winners
+    winners.forEach((winner) => {
+      sendWinningEmailClassic(winner.email, winner.fullName, winner.prize);
+    });
 
     const winnersData = winners.map((winner) => ({
       place: winner.place,
@@ -403,6 +409,11 @@ const performLotteryDraw = async (lotteryId, lotteryType) => {
 
     console.log(`Winners for lottery ID ${lotteryId}:`, winners);
 
+    // Send email notifications to winners
+    winners.forEach((winner) => {
+      sendWinningEmail(winner.email, winner.fullName, winner.prize);
+    });
+
     const winnersData = winners.map((winner) => ({
       place: winner.place,
       ticketId: winner.ticketNumber,
@@ -574,6 +585,72 @@ const getRandomUsersFromMockData = (count) => {
   return shuffled.slice(0, count);
 };
 
+
+
+
+
+
+
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  host:"smtp.gmail.com",
+  port:587,
+  secure:false,
+  auth: {
+    user: process.env.EMAIL_USER, // Your email
+    pass: process.env.EMAIL_PASS  // Your email password or app-specific password
+  }
+});
+
+const sendWinningEmailClassic = (recipientEmail, recipientName, prize) => {
+  const mailOptions = {
+    from: 
+    {
+      name:'Miracle Of Luck',
+      address:process.env.EMAIL_USER,
+    },
+
+    to:recipientEmail,
+    subject: "Congratulations, You Won!",
+    text: `Dear ${recipientName},\n\nCongratulations! You have won ${prize.amount} $ in the lottery. Please log in to your account to see the details.\n\nBest regards,\nMiracle Of Luck Team`,
+    html: `<p>Dear ${recipientName},</p><p>Congratulations! You have won <strong>${prize.amount}</strong> $ in the lottery. Please <a href="https://miracle-of-luck.vercel.app">log in</a> to your account to see the details.</p><p>Best regards,<br>Miracle Of Luck Team</p>`,
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log('Error sending email:', error);
+    } else {
+      console.log('Email sent: ' + info.response);
+    }
+  });
+};
+
+const sendWinningEmail = (recipientEmail, recipientName, prize) => {
+  const mailOptions = {
+    from: 
+    {
+      name:'Miracle Of Luck',
+      address:process.env.EMAIL_USER,
+    },
+
+
+    to:recipientEmail,
+    subject: "Congratulations, You Won!",
+
+
+    text: `Dear ${recipientName},\n\nCongratulations! You have won ${prize.description} ( ${prize.icon} ) in the lottery. Please log in to your account to see the details.\n\nBest regards,\nMiracle Of Luck Team`,
+    html: `<p>Dear ${recipientName},</p><p>Congratulations! You have won <strong>${prize.description}</strong> ( <strong>${prize.icon}</strong> ) in the lottery. Please <a href="https://miracle-of-luck.vercel.app">log in</a> to your account to see the details.</p><p>Best regards,<br>Miracle Of Luck Team</p>`,
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log('Error sending email:', error);
+    } else {
+      console.log('Email sent: ' + info.response);
+    }
+  });
+};
 
 
 export { scheduledJobs };
