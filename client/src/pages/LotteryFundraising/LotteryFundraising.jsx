@@ -39,7 +39,6 @@ const LotteryFundraising = () => {
   const { data, isLoading, isError } = useQuery(["lotteryfundraising", id], () => getLotteryFundraising(id));
   const [ticketModalOpened, setTicketModalOpened] = useState(false);
   const [participantsModalOpened, setParticipantsModalOpened] = useState(false);
-  const [ticketNumberExpanded, setTicketNumberExpanded] = useState(false); // State to control ticket number section
   const [participants, setParticipants] = useState([]);
   const { validateLogin } = useAuthCheck();
   const { user } = useAuth0();

@@ -7,6 +7,8 @@
   padding-top: 1rem;
   padding-bottom: 1rem;
   color: var(--secondary);
+  position: relative; /* Make sure container is the reference point for absolute positioning */
+
 }
 
 .h-menu {
@@ -20,6 +22,8 @@
 
 .menu-icon {
   display: none;
+  z-index: 101; /* Ensure the icon is above other elements */
+
 }
 
 @media (max-width: 800px) {

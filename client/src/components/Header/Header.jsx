@@ -28,24 +28,24 @@ const Header = () => {
   const handleLogin = () => {
     loginWithRedirect({
       redirectUri: window.location.origin,
-      appState: { targetUrl: window.location.pathname }, // This will return the user to the page they were on after logging in
+      appState: { targetUrl: window.location.pathname },
       authorizationParams: {
-        screen_hint: "login", // This will show the login page instead of the signup page
+        screen_hint: "login",
       },
     });
   };
 
-  const getMenuStyles = (menuOpened) => ({
-    right: document.documentElement.clientWidth <= 800 && !menuOpened ? "-100%" : "0",
+  const getMenuStyles = () => ({
+    right: isScreenSmall && !menuOpened ? "-100%" : "0", // Adjust menu position based on the state
   });
 
-  const handleMenuClose = () => {
-    setMenuOpened(false);
+  const handleMenuToggle = () => {
+    setMenuOpened((prev) => !prev); // Toggle menu open/close
   };
 
   return (
     <section className="h-wrapper" style={{ background: headerColor }}>
-      <div className="flexCenter paddings innerWidh h-container">
+      <div className="flexCenter paddings innerWidth h-container">
         <Link to="/">
           <img src="./BlackLogo.jpg" alt="logo" width={100} style={{ borderRadius: "10%" }} />
         </Link>
@@ -55,7 +55,8 @@ const Header = () => {
             setMenuOpened(false);
           }}
         >
-          <div className="flexCenter h-menu" style={getMenuStyles(menuOpened)}>
+          <div className="flexCenter h-menu" style={getMenuStyles()}>
+            {/* Render menu items */}
             {isScreenSmall ? (
               !isAuthenticated ? (
                 <button className="button button-green" onClick={handleLogin}>
@@ -66,14 +67,14 @@ const Header = () => {
               )
             ) : null}
 
-            <NavLink to="/lotteries" onClick={handleMenuClose}>
+            <NavLink to="/lotteries" onClick={() => setMenuOpened(false)}>
               <button className="button button-blue">Lotteries</button>
             </NavLink>
-            <Link to="/results" onClick={handleMenuClose}>
+            <Link to="/results" onClick={() => setMenuOpened(false)}>
               <button className="button button-blue">Results</button>
             </Link>
 
-            <Link to="/create" onClick={handleMenuClose}>
+            <Link to="/create" onClick={() => setMenuOpened(false)}>
               <button className="button button-blue">Create Lottery</button>
             </Link>
 
@@ -86,7 +87,7 @@ const Header = () => {
             )}
           </div>
         </OutsideClickHandler>
-        <div className="menu-icon" onClick={() => setMenuOpened((prev) => !prev)}>
+        <div className="menu-icon" onClick={handleMenuToggle}>
           <BiMenuAltRight size={30} />
         </div>
       </div>

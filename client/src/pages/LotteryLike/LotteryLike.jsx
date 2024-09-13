@@ -266,15 +266,8 @@ const LotteryLike = () => {
         {/* Actions Section */}
         <Box className="flexColCenter NavBut">
           <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2, mt: 2 }}>
-            {lotteryStatus !== "Closed" && cancelLotteryOption ? (
-              <button
-                className="button button-red"
-                onClick={() => cancelLotteryMutation.mutate()}
-                disabled={isCancelLotteryDisabled}
-              >
-                Cancel Lottery
-              </button>
-            ) : (
+            {lotteryStatus === "Closed" ? (
+              // Show "Show All Participants" button if the lottery is closed
               <button
                 className="button button-blue"
                 onClick={fetchAllParticipants}
@@ -282,9 +275,21 @@ const LotteryLike = () => {
               >
                 Show All Participants
               </button>
+            ) : (
+              // Show "Cancel Lottery" button if the lottery is not closed and the cancel option is available
+              cancelLotteryOption && (
+                <button
+                  className="button button-red"
+                  onClick={() => cancelLotteryMutation.mutate()}
+                  disabled={isCancelLotteryDisabled}
+                >
+                  Cancel Lottery
+                </button>
+              )
             )}
           </Box>
         </Box>
+
 
         {participantsModalOpened && (
           <ParticipantsModal

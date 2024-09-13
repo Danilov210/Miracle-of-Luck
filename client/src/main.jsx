@@ -10,7 +10,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       domain="dev-0xrld0sjyuhye82d.us.auth0.com"
       clientId="5HniVNPbu3FG8pQzq49agyz13275WqAO"
       authorizationParams={{
-        redirect_uri: "https://miracle-of-luck.vercel.app",
+        //redirect_uri: "https://miracle-of-luck.vercel.app",
+        redirect_uri: "http://localhost:5173",
+
       }}
       audience="http://localhost:8000"
       scope="openid profile email"
