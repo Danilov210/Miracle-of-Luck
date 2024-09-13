@@ -16,7 +16,7 @@ export const createUser = async (data, token) => {
         },
       }
     );
-//
+
     // Extract and store the data from the response
     const receivedData = response.data; // Store the data from the response
     return receivedData; // Return the data for further use
@@ -270,7 +270,7 @@ export const CancelLottery = async (email, lotteryId, lotteryType) => {
 
   try {
     const response = await api.post('/user/CancelLottery', {
-      data: { email, lotteryId, lotteryType }, // Send both lotteryId and lotteryType
+      data: { email, lotteryId, lotteryType }, 
     });
     return response;
   } catch (error) {
