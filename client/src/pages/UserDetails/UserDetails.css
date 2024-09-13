@@ -30,3 +30,44 @@
   .uploadZone:hover .avatar-large {
     transform: scale(1.05); /* Slight scaling effect on hover */
   }
+
+/* Override the font size for non-selected tabs */
+.MuiTabs-root .MuiTab-root.customTab {
+  font-size: 1.2rem !important; /* Adjust the font size for non-selected tabs */
+}
+
+/* Override the font size for selected tabs */
+.MuiTabs-root .MuiTab-root.customTab.Mui-selected {
+  font-size: 1.2rem !important; /* Adjust the font size for selected tabs */
+}
+
+/* Media query for smaller screens */
+@media (max-width: 640px) {
+  .MuiTabs-root .MuiTab-root.customTab {
+    font-size: 0.7rem !important; /* Adjust font size for non-selected tabs on mobile devices */
+  }
+
+  .MuiTabs-root .MuiTab-root.customTab.Mui-selected {
+    font-size: 0.7rem !important; /* Adjust font size for selected tab on mobile devices */
+  }
+}
+
+/* Center the tabs within the dialog */
+.tabsContainer {
+  display: flex;
+  justify-content: center; /* Centers the tabs horizontally */
+  margin-bottom: 1rem; /* Adds some space below the tabs */
+}
+
+.customTabs {
+  color: var(--primary); /* Example text color */
+  margin: 1rem 0; /* Add some spacing around the tabs */
+  border-radius: 5px; /* Rounded corners */
+  width: 100%; /* Ensures tabs take the full width available */
+  display: flex;
+  justify-content: center; /* Centers the tabs themselves */
+}
+
+.MuiTabs-flexContainer {
+  justify-content: center; /* Centers the tabs within the container */
+}

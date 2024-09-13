@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { Dialog, DialogTitle, DialogContent, Button, TextField, Typography, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { toast } from "react-toastify";
@@ -8,6 +8,7 @@ import { BuyTicketFundraising } from "../../utils/api.js";
 
 const LotteryFundraisingTicketPurchase = ({ opened, setOpened, lotteryId, email, ticketPrice }) => {
   const [ticketNumber, setTicketNumber] = useState(1); // Default ticket number
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false); // State to control button lock
   const {
     userDetails: { token, balance },
     setUserDetails,
@@ -15,6 +16,12 @@ const LotteryFundraisingTicketPurchase = ({ opened, setOpened, lotteryId, email,
 
   // Calculate total price based on the number of tickets
   const totalPrice = ticketNumber * ticketPrice;
+
+  useEffect(() => {
+    if (opened) {
+      setIsButtonDisabled(false); // Reset button state to enabled when the dialog opens
+    }
+  }, [opened]); // Re-run effect whenever the dialog's open state changes
 
   const handleLotteryTicketPurchaseSuccess = () => {
     toast.success("You have purchased your ticket successfully", {
@@ -35,11 +42,12 @@ const LotteryFundraisingTicketPurchase = ({ opened, setOpened, lotteryId, email,
     }));
 
     setTicketNumber(1); // Reset ticket number to 1 after purchase
+    setIsButtonDisabled(false); // Unlock button after success
   };
 
   // Mutation for booking tickets
-  const { mutate, isLoading } = useMutation({
-    mutationFn: () =>
+  const { mutate } = useMutation(
+    () =>
       BuyTicketFundraising(
         {
           ticketNumber,
@@ -49,14 +57,24 @@ const LotteryFundraisingTicketPurchase = ({ opened, setOpened, lotteryId, email,
         },
         token
       ),
-    onSuccess: () => handleLotteryTicketPurchaseSuccess(),
-    onError: ({ response }) => toast.error(response.data.message),
-    onSettled: () => setOpened(false),
-  });
+    {
+      onSuccess: () => handleLotteryTicketPurchaseSuccess(),
+      onError: ({ response }) => {
+        toast.error(response.data.message);
+        setIsButtonDisabled(false); // Unlock button if there is an error
+      },
+      onSettled: () => setOpened(false),
+    }
+  );
 
   const handleTicketNumberChange = (e) => {
     const value = Math.max(1, Math.min(10, parseInt(e.target.value) || 1)); // Limit between 1 and 10
     setTicketNumber(value);
+  };
+
+  const handleBuyTicketsClick = () => {
+    setIsButtonDisabled(true); // Lock the button when clicked
+    mutate(); // Execute the mutation
   };
 
   return (
@@ -66,46 +84,43 @@ const LotteryFundraisingTicketPurchase = ({ opened, setOpened, lotteryId, email,
       aria-labelledby="dialog-title"
       maxWidth="sm"
       fullWidth
+      sx={{ 
+        margin: "auto"
+       }} // Correctly set the width to 90%
+
     >
-      <DialogTitle id="dialog-title" sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <DialogTitle
+        id="dialog-title"
+        className="dialogTitle"
+        sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+      >
         Purchase Tickets
         {/* Close Button */}
         <IconButton onClick={() => setOpened(false)}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <DialogContent>
+      <DialogContent className="dialogContent">
         <div className="flexColCenter" style={{ gap: "1rem", minWidth: "300px" }}>
           <Typography variant="h6">Your Balance: {balance} USD</Typography>
           <TextField
+            className="responsiveTextField"
             label="Number of Tickets (Max 10 per purchase)"
             type="number"
             value={ticketNumber}
             onChange={handleTicketNumberChange}
-            inputProps={{ min: 1, max: 10 }} // Limit the input to a minimum of 1 and a maximum of 10
+            inputProps={{ min: 1, max: 10 }}
             fullWidth
+            sx={{ width: '84%' }} // Correctly set the width to 90%
           />
           <Typography variant="h6">Total Price: {totalPrice} USD</Typography>
-          <Button
-            variant="contained"
-            sx={{
-              backgroundColor: "var(--blue)",
-              fontWeight: 500,
-              padding: "0.6rem 1.4rem",
-              color: "white",
-              borderRadius: "64px",
-              transition: "all 300ms ease-in",
-              "&:hover": {
-                cursor: "pointer",
-                transform: "scale(1.1)",
-                backgroundColor: "var(--blue)", // Keep the same color on hover
-              },
-            }}
-            disabled={isLoading || totalPrice > balance}
-            onClick={() => mutate()}
+          <button
+            className="button button-blue"
+            disabled={isButtonDisabled || totalPrice > balance} // Disable the button based on the state
+            onClick={handleBuyTicketsClick} // Use the function to handle the click and disable the button
           >
             Buy Tickets
-          </Button>
+          </button>
         </div>
       </DialogContent>
     </Dialog>

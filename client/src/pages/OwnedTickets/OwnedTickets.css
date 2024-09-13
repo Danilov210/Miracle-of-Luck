@@ -25,3 +25,29 @@
     margin-top: 20px; /* Add some margin if needed */
     text-align: center;
   }
+
+  /* Default styles for buttons */
+.filter-button {
+  padding: 0.8rem 1.6rem; /* Default padding for larger screens */
+  font-size: 1rem; /* Default font size */
+  margin: 0.5rem; /* Space between buttons */
+  border: none;
+  border-radius: 8px;
+  background-color: #4066ff;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filter-button.active {
+  background-color: #2949c6; /* Different color for active button */
+}
+
+/* Media query for smaller screens */
+@media (max-width: 800px) {
+  .filter-button {
+    padding: 0.4rem 0.5rem; /* Smaller padding for smaller screens */
+    font-size: 0.8rem; /* Smaller font size */
+    margin: 0.3rem; /* Less space between buttons */
+  }
+}

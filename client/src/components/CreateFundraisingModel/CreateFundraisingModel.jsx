@@ -20,57 +20,57 @@ const CloseSVG = () => (
 );
 
 const iconOptions = [
-    { label: "Phone", value: "Phone", icon: <CustomIcon path="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.11-.21 11.72 11.72 0 004.51 1.15 1 1 0 01.91 1v3.19a1 1 0 01-1 1A18 18 0 013 6a1 1 0 011-1h3.19a1 1 0 011 .91 11.72 11.72 0 001.15 4.51 1 1 0 01-.21 1.11l-2.2 2.2z" /> },
-    { label: "Email", value: "Email", icon: <CustomIcon path="M2 4h20v16H2z M22 4L12 13 2 4" /> },
-    { label: "Star", value: "Star", icon: <CustomIcon path="M12 17.27L18.18 21 15.64 13.97 22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l6.36 4.73L5.82 21z" /> },
-    { label: "Shopping Cart", value: "ShoppingCart", icon: <CustomIcon path="M7 4h13l-1.38 9H8.38L7 4zM5 4H4L2 14h2l1-6h15v2H5zM9 16h6v2H9z" /> },
-    { label: "Gift Card", value: "GiftCard", icon: <CustomIcon path="M4 4h16v12H4z M6 8h12v4H6z M4 8h16" /> },
-    { label: "Smartphone", value: "Smartphone", icon: <CustomIcon path="M7 2h10v20H7z M9 18h6v2H9z" /> },
-    { label: "Laptop", value: "Laptop", icon: <CustomIcon path="M2 5h20v12H2z M0 19h24v2H0z" /> },
-    { label: "Headphones", value: "Headphones", icon: <CustomIcon path="M4 12V10a8 8 0 0116 0v2h-3v10H7V12H4z" /> },
-    { label: "Watch", value: "Watch", icon: <CustomIcon path="M12 1v22M7 4h10v16H7z" /> },
-    { label: "Subscription", value: "Subscription", icon: <CustomIcon path="M4 4h16v12H4z M6 8h12v4H6z" /> },
-    { label: "Gaming Console", value: "GamingConsole", icon: <CustomIcon path="M5 8v10h14V8z M9 16l-3 3v-6l3 3z" /> },
-    { label: "Kitchen Appliance", value: "KitchenAppliance", icon: <CustomIcon path="M7 3v18h10V3z M9 5h6v12H9z" /> },
-    { label: "Speaker", value: "Speaker", icon: <CustomIcon path="M4 6h16v12H4z M8 10h8v4H8z" /> },
-    { label: "Beauty Products", value: "BeautyProducts", icon: <CustomIcon path="M12 2C8.13 2 5 5.13 5 9c0 3.87 3.13 7 7 7s7-3.13 7-7c0-3.87-3.13-7-7-7z" /> },
-    { label: "Travel Voucher", value: "TravelVoucher", icon: <CustomIcon path="M5 8l5 5 10-10" /> },
-    { label: "Fashion Accessories", value: "FashionAccessories", icon: <CustomIcon path="M12 2l4 8H8z M4 10h16v8H4z" /> },
-    { label: "Home Automation", value: "HomeAutomation", icon: <CustomIcon path="M5 12h14l-7-7z M12 5v14" /> },
-    { label: "Outdoor Gear", value: "OutdoorGear", icon: <CustomIcon path="M12 2l10 20H2z M12 2v20" /> },
-    { label: "Books", value: "Books", icon: <CustomIcon path="M3 4v16h18V4H3zm2 2h14v12H5V6z" /> },
-    { label: "Pet Supplies", value: "PetSupplies", icon: <CustomIcon path="M12 2C7.03 2 3 6.03 3 11h6v9h6v-9h6c0-4.97-4.03-9-9-9z" /> },
-    { label: "Camera", value: "Camera", icon: <CustomIcon path="M4 8h16v12H4z M8 5h8v2H8z" /> },
-    { label: "Snack Box", value: "SnackBox", icon: <CustomIcon path="M4 8h16v8H4z M8 5h8v2H8z" /> },
-    { label: "Car", value: "Car", icon: <CustomIcon path="M3 10h18l-3 5H6z" /> },
-    { label: "Fitness", value: "Fitness", icon: <CustomIcon path="M6 12h12v2H6z M8 8h8v2H8z" /> },
-    { label: "Restaurant", value: "Restaurant", icon: <CustomIcon path="M6 2v20 M18 2v20" /> },
-    { label: "Shopping Mall", value: "ShoppingMall", icon: <CustomIcon path="M5 8h14v12H5z M8 10h8v8H8z" /> },
-    { label: "Movies", value: "Movies", icon: <CustomIcon path="M4 8h16v12H4z M8 10h8v4H8z" /> },
-    { label: "Bar", value: "Bar", icon: <CustomIcon path="M4 6h16v12H4z" /> },
-    { label: "Spa", value: "Spa", icon: <CustomIcon path="M4 12l8 8 8-8" /> },
-    { label: "Airplane", value: "Airplane", icon: <CustomIcon path="M10 20l2-18M12 2l8 8-8-8-8 8z" /> },
-    { label: "Boat", value: "Boat", icon: <CustomIcon path="M12 2L4 20h16z" /> },
-    { label: "Bike", value: "Bike", icon: <CustomIcon path="M4 10h16 M8 6h8 M6 8v8 M18 8v8" /> },
-    { label: "Bus", value: "Bus", icon: <CustomIcon path="M4 8h16v8H4z M8 6h8v2H8z" /> },
-    { label: "Bed", value: "Bed", icon: <CustomIcon path="M4 12h16v6H4z" /> },
-    { label: "Hospital", value: "Hospital", icon: <CustomIcon path="M6 2h12v20H6z M9 8h6v8H9z" /> },
-    { label: "Desktop", value: "Desktop", icon: <CustomIcon path="M4 5h16v12H4z M8 18h8v2H8z" /> },
-    { label: "Tablet", value: "Tablet", icon: <CustomIcon path="M7 2h10v20H7z" /> },
-    { label: "Toys", value: "Toys", icon: <CustomIcon path="M12 2v20 M6 6h12 M6 18h12" /> },
-    { label: "Music", value: "Music", icon: <CustomIcon path="M9 2v12h6V2z" /> },
-    { label: "Art", value: "Art", icon: <CustomIcon path="M12 2v20 M6 6h12 M6 18h12" /> },
-    { label: "Flash", value: "Flash", icon: <CustomIcon path="M7 2l10 10H7l10 10z" /> },
-    { label: "Healing", value: "Healing", icon: <CustomIcon path="M12 2l10 20H2z" /> },
-    { label: "Nature", value: "Nature", icon: <CustomIcon path="M6 8l12 8-12-8-12 8z" /> },
-    { label: "Palette", value: "Palette", icon: <CustomIcon path="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14a4 4 0 01-4-4h8a4 4 0 01-4 4z" /> },
-    { label: "Beach", value: "Beach", icon: <CustomIcon path="M4 12h16v8H4z" /> },
-    { label: "Bug", value: "Bug", icon: <CustomIcon path="M4 4h16v12H4z M8 6h8v8H8z" /> },
-    { label: "Code", value: "Code", icon: <CustomIcon path="M4 12h16v8H4z" /> },
-    { label: "Power", value: "Power", icon: <CustomIcon path="M12 2v20 M6 8h12 M6 16h12" /> },
-    { label: "Workout", value: "Workout", icon: <CustomIcon path="M4 8h16v8H4z M8 6h8v2H8z" /> },
-    { label: "Others", value: "Others", icon: <CustomIcon path="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-2.47-.35-4.52-2.4-4.93-4.93H5v-2h1.07c.26-1.17.97-2.2 1.93-2.93V7h2v1.07c1.17-.26 2.2-.97 2.93-1.93H15v2h-1.07c-.26 1.17-.97 2.2-1.93 2.93V15h-2v-1.07c-1.17.26-2.2.97-2.93 1.93H7v2h1.07c.35 2.47 2.4 4.52 4.93 4.93V21z" /> }
-  ];
+  { label: "Phone", value: "Phone" },
+  { label: "Email", value: "Email" },
+  { label: "Star", value: "Star" },
+  { label: "Shopping Cart", value: "ShoppingCart" },
+  { label: "Gift Card", value: "GiftCard" },
+  { label: "Smartphone", value: "Smartphone" },
+  { label: "Laptop", value: "Laptop" },
+  { label: "Headphones", value: "Headphones" },
+  { label: "Watch", value: "Watch" },
+  { label: "Subscription", value: "Subscription" },
+  { label: "Gaming Console", value: "GamingConsole" },
+  { label: "Kitchen Appliance", value: "KitchenAppliance" },
+  { label: "Speaker", value: "Speaker" },
+  { label: "Beauty Products", value: "BeautyProducts" },
+  { label: "Travel Voucher", value: "TravelVoucher" },
+  { label: "Fashion Accessories", value: "FashionAccessories" },
+  { label: "Home Automation", value: "HomeAutomation" },
+  { label: "Outdoor Gear", value: "OutdoorGear" },
+  { label: "Books", value: "Books" },
+  { label: "Pet Supplies", value: "PetSupplies" },
+  { label: "Camera", value: "Camera" },
+  { label: "Snack Box", value: "SnackBox" },
+  { label: "Car", value: "Car" },
+  { label: "Fitness", value: "Fitness" },
+  { label: "Restaurant", value: "Restaurant" },
+  { label: "Shopping Mall", value: "ShoppingMall" },
+  { label: "Movies", value: "Movies" },
+  { label: "Bar", value: "Bar" },
+  { label: "Spa", value: "Spa" },
+  { label: "Airplane", value: "Airplane" },
+  { label: "Boat", value: "Boat" },
+  { label: "Bike", value: "Bike" },
+  { label: "Bus", value: "Bus" },
+  { label: "Bed", value: "Bed" },
+  { label: "Hospital", value: "Hospital" },
+  { label: "Desktop", value: "Desktop" },
+  { label: "Tablet", value: "Tablet" },
+  { label: "Toys", value: "Toys" },
+  { label: "Music", value: "Music" },
+  { label: "Art", value: "Art" },
+  { label: "Flash", value: "Flash" },
+  { label: "Healing", value: "Healing" },
+  { label: "Nature", value: "Nature" },
+  { label: "Palette", value: "Palette" },
+  { label: "Beach", value: "Beach" },
+  { label: "Bug", value: "Bug" },
+  { label: "Code", value: "Code" },
+  { label: "Power", value: "Power" },
+  { label: "Workout", value: "Workout" },
+  { label: "Others", value: "Others" }
+];
 
 const CreateFundraisingModel = ({ open, setOpen }) => {
   const { user, getAccessTokenSilently } = useAuth0();
@@ -163,7 +163,7 @@ const CreateFundraisingModel = ({ open, setOpen }) => {
       <DialogContent>
         <Container>
           <Stepper activeStep={activeStep} alternativeLabel>
-            {["Main - Details", "Images - Upload", "Conditions - Details", "Prizes - Details"].map((label) => (
+            {["Main - Details", "Images - Upload", "Participation - Details", "Prizes - Details"].map((label) => (
               <Step key={label}><StepLabel>{label}</StepLabel></Step>
             ))}
           </Stepper>
@@ -202,7 +202,7 @@ const CreateFundraisingModel = ({ open, setOpen }) => {
 
           {activeStep === 2 && (
             <div>
-              <Typography variant="h4" sx={{ mt: 2, textAlign: "center", fontWeight: "bold" }}>Select the conditions for the lottery</Typography>
+              <span className="flexColCenter primaryText">Enter Participation Details</span>
               {renderTextField("Participation Description", lotteryDetails.paticipationdescription, (e) => setLotteryDetails({ ...lotteryDetails, paticipationdescription: e.target.value }))}
               {renderTextField("Price of One Ticket (Min Value 1)", lotteryDetails.price, (e) => setLotteryDetails({ ...lotteryDetails, price: Math.max(1, parseFloat(e.target.value) || 0) }), "number")}
               <Box className="flexColCenter NavBut">
@@ -216,7 +216,7 @@ const CreateFundraisingModel = ({ open, setOpen }) => {
 
           {activeStep === 3 && (
             <div>
-              <Typography variant="h4" sx={{ mt: 2, textAlign: "center", fontWeight: "bold" }}>Add Prizes for the Lottery</Typography>
+              <span className="flexColCenter primaryText">Add Prizes for the Lottery</span>
               {lotteryDetails.prizes.map((prize, index) => (
                 <Box
                   key={index}
@@ -246,7 +246,7 @@ const CreateFundraisingModel = ({ open, setOpen }) => {
                     {iconOptions.map((option) => (
                       <MenuItem key={option.value} value={option.value}>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-                          {option.icon} {option.label}
+                          {option.label}
                         </Box>
                       </MenuItem>
                     ))}

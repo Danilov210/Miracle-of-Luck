@@ -1,22 +1,22 @@
 import React, { useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { Container, Dialog, DialogTitle, DialogContent, IconButton, Typography, Stepper, Step, StepLabel, TextField, Select, Box, MenuItem, Button } from "@mui/material";
-import { toast } from "react-toastify"; 
+import { toast } from "react-toastify";
 import UploadImage from "../UploadImage/UploadImage";
 import { createLotteryClassic } from "../../utils/api";
 import "./CreateClassicModel.css";
 
 // Custom SVG icon component
 const CustomIcon = ({ path, label }) => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <path d={path} stroke="currentColor" strokeWidth="2" />
-    {label && <title>{label}</title>}
-  </svg>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d={path} stroke="currentColor" strokeWidth="2" />
+        {label && <title>{label}</title>}
+    </svg>
 );
 
 // Define the Close SVG icon
 const CloseSVG = () => (
-  <CustomIcon path="M6 6L18 18M6 18L18 6" label="Close" />
+    <CustomIcon path="M6 6L18 18M6 18L18 6" label="Close" />
 );
 
 const CreateClassicModel = ({ open, setOpen }) => {
@@ -55,7 +55,7 @@ const CreateClassicModel = ({ open, setOpen }) => {
 
     const addPrize = () => setLotteryDetails((prev) => ({
         ...prev,
-        prizes: [...prev.prizes, { place: prev.prizes.length + 1, amount: 0 }] 
+        prizes: [...prev.prizes, { place: prev.prizes.length + 1, amount: 0 }]
     }));
 
     const deleteLastPrize = () => setLotteryDetails((prev) => ({
@@ -66,7 +66,7 @@ const CreateClassicModel = ({ open, setOpen }) => {
     const handleFinish = async () => {
         try {
             const token = await getAccessTokenSilently();
-            
+
             const endDate = lotteryDetails.endDate ? new Date(lotteryDetails.endDate).toISOString() : null;
             const payload = { ...lotteryDetails, endDate };
 
@@ -114,7 +114,7 @@ const CreateClassicModel = ({ open, setOpen }) => {
             <DialogContent>
                 <Container>
                     <Stepper activeStep={activeStep} alternativeLabel>
-                        {["Main - Details", "Images - Upload", "Conditions - Details", "Prizes - Details"].map((label) => (
+                        {["Main - Details", "Images - Upload", "Participation - Details", "Prizes - Details"].map((label) => (
                             <Step key={label}><StepLabel>{label}</StepLabel></Step>
                         ))}
                     </Stepper>
@@ -153,10 +153,10 @@ const CreateClassicModel = ({ open, setOpen }) => {
 
                     {activeStep === 2 && (
                         <div>
-                            <Typography variant="h4" sx={{ mt: 2, textAlign: "center", fontWeight: "bold" }}>Select the conditions for the lottery</Typography>
+                            <span className="flexColCenter primaryText">Enter Participation Details</span>
                             {renderTextField("Participation Description", lotteryDetails.paticipationdescription, (e) => setLotteryDetails({ ...lotteryDetails, paticipationdescription: e.target.value }))}
                             {renderTextField("Price of One Ticket (Min Value 1)", lotteryDetails.price, (e) => setLotteryDetails({ ...lotteryDetails, price: Math.max(1, parseFloat(e.target.value) || 0) }), "number")}
-                            {renderTextField("Available Number Range (e.g., 1 to 49)", lotteryDetails.availableNumberRange, (e) => setLotteryDetails({ ...lotteryDetails, availableNumberRange: Math.min(50, Math.max(1, parseFloat(e.target.value) || 0)) }), "number")}
+                            {renderTextField("Available Number Range (e.g., 1 to 50)", lotteryDetails.availableNumberRange, (e) => setLotteryDetails({ ...lotteryDetails, availableNumberRange: Math.min(50, Math.max(1, parseFloat(e.target.value) || 0)) }), "number")}
                             {renderTextField("Drawn Numbers Count (e.g., drawing 6 numbers)", lotteryDetails.drawnNumbersCount, (e) => setLotteryDetails({ ...lotteryDetails, drawnNumbersCount: Math.min(50, Math.max(1, parseFloat(e.target.value) || 0)) }), "number")}
                             <Box className="flexColCenter NavBut">
                                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 2, mt: 2 }}>
@@ -170,10 +170,18 @@ const CreateClassicModel = ({ open, setOpen }) => {
 
                     {activeStep === 3 && (
                         <div>
-                            <Typography variant="h4" sx={{ mt: 2, textAlign: "center", fontWeight: "bold" }}>Add Prizes for the Lottery</Typography>
+                            <span className="flexColCenter primaryText">Add Prizes for the Lottery</span>
                             {lotteryDetails.prizes.map((prize, index) => (
-                                <Box key={index} sx={{ mt: 2, display: "flex", alignItems: "center", gap: 2 }}>
-                                    <Typography sx={{ minWidth: "200px", whiteSpace: "nowrap" }}>
+                                <Box
+                                    key={index}
+                                    sx={{
+                                        mt: 2,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 2,
+                                        flexDirection: { xs: 'column', sm: 'row' }
+                                    }}
+                                >                                    <Typography sx={{ minWidth: "200px", whiteSpace: "nowrap" }}>
                                         Place {index + 1} ({lotteryDetails.drawnNumbersCount - index} {lotteryDetails.drawnNumbersCount - index === 1 ? "number" : "numbers"} from {lotteryDetails.drawnNumbersCount})
                                     </Typography>
                                     {renderTextField("Amount (greater than 1)", prize.amount, (e) => handlePrizeChange(index, "amount", Math.max(1, parseFloat(e.target.value) || 0)), "number")}

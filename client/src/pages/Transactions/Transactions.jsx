@@ -31,21 +31,47 @@ const Transactions = () => {
 
     return (
         <Box sx={{ padding: "2rem" }}>
-            <Typography variant="h4" gutterBottom>
+            <Typography
+                variant="h4"
+                gutterBottom
+                sx={{
+                    fontSize: { xs: "1.5rem", sm: "2rem", md: "2.5rem" }, // Responsive font size
+                }}
+            >
                 Transaction History
             </Typography>
             {loading ? (
-                <Typography>Loading transactions...</Typography>
+                <Typography
+                    sx={{
+                        fontSize: { xs: "0.8rem", sm: "1rem" }, // Smaller font size for loading text
+                    }}
+                >
+                    Loading transactions...
+                </Typography>
             ) : transactions.length === 0 ? (
-                // Show this box if no transactions are found
-                <Box sx={{ padding: "1rem", border: "1px solid #ccc", borderRadius: "8px", backgroundColor: "#f9f9f9", textAlign: "center" }}>
+                <Box
+                    sx={{
+                        padding: "1rem",
+                        border: "1px solid #ccc",
+                        borderRadius: "8px",
+                        backgroundColor: "#f9f9f9",
+                        textAlign: "center",
+                        fontSize: { xs: "0.9rem", sm: "1rem" }, // Adjust the font size
+                    }}
+                >
                     <Typography variant="body1">
                         You did not perform any transactions.
                     </Typography>
                 </Box>
             ) : (
                 <TableContainer component={Paper}>
-                    <Table>
+                    <Table
+                        sx={{
+                            "& .MuiTableCell-root": {
+                                fontSize: { xs: "0.7rem", sm: "0.9rem", md: "1rem" }, // Responsive font size for table cells
+                            },
+                        }}
+                    >
                         <TableHead>
                             <TableRow>
                                 <TableCell>Transaction ID</TableCell>

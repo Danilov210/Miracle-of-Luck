@@ -1,18 +1,20 @@
-
 .text-field-container {
-  margin-bottom: 15rem; /* Adds space between each text field */
+  margin-bottom: 15rem;
+  /* Adds space between each text field */
 }
 
 .dialog-title {
   text-align: center;
   font-size: 1.5rem;
-  margin-bottom: 1rem; /* Adds space below the title */
+  margin-bottom: 1rem;
+  /* Adds space below the title */
 }
 
 .dialog-content {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem; /* Adds uniform spacing between all items */
+  gap: 1.5rem;
+  /* Adds uniform spacing between all items */
 }
 
 .button {
@@ -31,12 +33,21 @@
 
 .button-blue {
   background-color: var(--blue);
-  margin: 0 auto; /* Center the button horizontally */
+  margin: 0 auto;
+  /* Center the button horizontally */
 }
+
 .NavBut {
-  display: flex; /* Ensures buttons are in a row */
-  justify-content: center; /* Centers the button group horizontally */
-  align-items: center; /* Aligns buttons vertically */
-  gap: 2rem; /* Adds 2rem gap between the buttons */
-  margin-top: 3rem; /* Adds top margin */
+  display: flex;
+  /* Ensures buttons are in a row */
+  justify-content: center;
+  /* Centers the button group horizontally */
+  align-items: center;
+  /* Aligns buttons vertically */
+  gap: 2rem;
+  /* Adds 2rem gap between the buttons */
+  margin-top: 3rem;
+  /* Adds top margin */
 }
+
+

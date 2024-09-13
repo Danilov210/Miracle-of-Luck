@@ -1,0 +1,41 @@
+/* Default styles */
+.MuiDialogTitle-root.dialogTitle {
+    font-size: 1.5rem !important; /* Override MUI styles */
+  }
+  
+  .MuiDialogContent-root.dialogContent {
+    font-size: 1rem !important; /* Override MUI styles */
+  }
+  
+  .MuiTextField-root.responsiveTextField {
+    width: 100% !important;
+    max-width: 400px !important; /* Default max-width */
+    margin-bottom: 1rem !important;
+  }
+  
+  .MuiButton-root.dialogButton {
+    font-size: 1rem !important;
+    padding: 0.6rem 1.4rem !important;
+    border-radius: 64px !important;
+  }
+  
+  /* Media query for smaller screens */
+  @media (max-width: 800px) {
+    .MuiDialogTitle-root.dialogTitle {
+      font-size: 1.2rem !important; /* Smaller font size for smaller screens */
+    }
+  
+    .MuiDialogContent-root.dialogContent {
+      font-size: 0.9rem !important; /* Smaller font size for smaller screens */
+    }
+  
+    .MuiTextField-root.responsiveTextField {
+      max-width: 100% !important; /* Adjust width on smaller screens */
+    }
+  
+    .MuiButton-root.dialogButton {
+      font-size: 0.8rem !important; /* Smaller button text size */
+      padding: 0.5rem 1rem !important; /* Smaller padding for buttons */
+    }
+  }
+  

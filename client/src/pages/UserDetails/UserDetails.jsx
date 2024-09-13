@@ -369,10 +369,24 @@ const UserDetails = () => {
         fullWidth
       >
         <DialogContent>
-          <Tabs value={selectedTab} onChange={handleTabChange}>
-            <Tab label="Deposit/Withdraw" />
-            <Tab label="Credit Card Info" />
-          </Tabs>
+          <Box className="tabsContainer">
+            <Tabs
+              value={selectedTab}
+              onChange={handleTabChange}
+              className="customTabs"
+              classes={{ indicator: "customTabIndicator" }}
+            >
+              <Tab
+                label="Deposit/Withdraw"
+                className="customTab"
+              />
+              <Tab
+                label="Credit Card Info"
+                className="customTab"
+              />
+            </Tabs>
+          </Box>
+
 
           {/* First Tab Content: Deposit/Withdraw */}
           {selectedTab === 0 && (

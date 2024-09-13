@@ -117,7 +117,7 @@ const LotteryClassicTicketPurchase = ({
                     variant={selectedNumbers.includes(i + 1) ? "contained" : "outlined"}
                     onClick={() => handleNumberClick(i + 1)}
                     sx={{
-                      width: "100%",
+                      width: "85%",
                       height: "50px",
                       fontWeight: 500,
                       backgroundColor: selectedNumbers.includes(i + 1)

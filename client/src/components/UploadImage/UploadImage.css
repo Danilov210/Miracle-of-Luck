@@ -21,3 +21,12 @@
     height: 100%;
     object-fit: cover;
 }
+
+/* Media query for screens smaller than 800px */
+@media (max-width: 800px) {
+    .uploadZone,
+    .uploadedImage {
+        height: auto; /* Adjust height automatically to make it square */
+        aspect-ratio: 1 / 1; /* Maintain a 1:1 aspect ratio to create a square */
+    }
+}
