@@ -17,9 +17,8 @@ export const createUser = async (data, token) => {
       }
     );
 
-    // Extract and store the data from the response
-    const receivedData = response.data; // Store the data from the response
-    return receivedData; // Return the data for further use
+    const receivedData = response.data;
+    return receivedData;
   } catch (error) {
     if (error.response) {
       // Handle specific status codes
@@ -248,13 +247,13 @@ export const getAllUserLotteries = async (email) => {
   }
 };
 
-export const CancelUserTicket = async (ticketId,email) => {
+export const CancelUserTicket = async (ticketId, email) => {
   try {
     if (!ticketId) {
       throw new Error("Ticket ID is required.");
     }
     const response = await api.post('/user/CancelTicket', {
-      data: { ticketId ,email }, // Ensures that ticketId is properly sent in the request body
+      data: { ticketId, email }, // Ensures that ticketId is properly sent in the request body
     });
 
     return response; // Return the response directly if successful
@@ -270,7 +269,7 @@ export const CancelLottery = async (email, lotteryId, lotteryType) => {
 
   try {
     const response = await api.post('/user/CancelLottery', {
-      data: { email, lotteryId, lotteryType }, 
+      data: { email, lotteryId, lotteryType },
     });
     return response;
   } catch (error) {
