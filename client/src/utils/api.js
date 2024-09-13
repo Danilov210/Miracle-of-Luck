@@ -2,7 +2,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 export const api = axios.create({
-  baseURL: "https://miracleofluck.onrender.com/api",
+  baseURL: "miracle-of-luck.onrender.com/api",
 });
 
 export const createUser = async (data, token) => {

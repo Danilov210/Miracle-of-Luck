@@ -23,6 +23,11 @@ app.use('/api/user', userRoute);
 app.use('/api/lotteries', lotteryRoute);
 app.use('/api/draw', drawRoute); // Use draw routes
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).send('OK'); // Responds with 200 status code and "OK" message
+});
+
 // Function to initialize scheduled draws
 const initializeDrawsAndScheduleDailyCheck = async () => {
   try {
