@@ -3,7 +3,7 @@
 # Miracle of Luck - Lottery Website
 
 ## Phase B
-- [MiracleOfLuckBook_A](./Documentation/MiracleOfLuckBook_A.pdf)
+- [Phase-A Book](./Documentation/MiracleOfLuckBook_A .pdf)
 - Phase-B Book
 - [Maintenance Guide](./Documentation/Maintenance_Guide.pdf)
 - User Guide
