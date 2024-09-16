@@ -4,7 +4,7 @@
 
 ## Phase B
 - [Phase-A Book](./Documentation/MiracleOfLuckBook_A.pdf)
-- Phase-B Book
+- [Phase-B Book](./Documentation/MiracleOfLuckBook_B.pdf)
 - [Maintenance Guide](./Documentation/Maintenance_Guide.pdf)
 - [User Guide](./Documentation/RunInstructions.pdf)
 - Presentation PW Phase 2
