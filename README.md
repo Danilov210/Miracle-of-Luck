@@ -5,7 +5,7 @@
 ## Phase B
 - Phase-A Book
 - Phase-B Book
-- [Maintenance Guide](./Documentation/Maintenance_Guide.pdf) <br /><br />
+[Maintenance Guide](./Documentation/Maintenance_Guide.pdf) <br /><br />
 - User Guide
 - Presentation PW Phase 2
 - Run Instructions
