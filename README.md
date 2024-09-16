@@ -84,4 +84,4 @@ SOFTWARE.
 
 ---
 
-Feel free to customize the content further to match the specifics of your project, such as changing the repository URL, adding or removing features, or adjusting the contributors and special thanks sections. This template provides a solid foundation for documenting your project in a professional and comprehensive way.
+You can tailor the content to better fit your project's unique needs by updating details like the repository URL, modifying the list of features, or refining the contributors and acknowledgment sections. This revised template serves as a strong starting point to effectively document your project in a clear and professional manner.
