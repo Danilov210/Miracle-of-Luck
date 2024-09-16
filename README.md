@@ -9,7 +9,7 @@
 - [User Guide](./Documentation/UserGuide.pdf)
 - Presentation PW Phase 2
 - [Run Instructions](./Documentation/RunInstructions.pdf)
-- [Video User Guide: How to Use Our Website](./Documentation/HowToUSeWebsite.pdf)
+- [Video User Guide: How to Use Our Website](./Documentation/HowToUseWebsite.pdf)
 
 ## Overview
 
