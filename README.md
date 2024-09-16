@@ -6,9 +6,9 @@
 - [Phase-A Book](./Documentation/MiracleOfLuckBook_A.pdf)
 - [Phase-B Book](./Documentation/MiracleOfLuckBook_B.pdf)
 - [Maintenance Guide](./Documentation/Maintenance_Guide.pdf)
-- [User Guide](./Documentation/RunInstructions.pdf)
+- [User Guide](./Documentation/UserGuide.pdf)
 - Presentation PW Phase 2
-- Run Instructions
+- [Run Instructions](./Documentation/RunInstructions.pdf)
 - Video User Guide: How to Use Our Website
 
 ## Overview
