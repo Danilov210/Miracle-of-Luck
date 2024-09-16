@@ -1,4 +1,4 @@
-![Miracle of Luck Logo](path/to/logo.png](https://github.com/Danilov210/Proj2/blob/main/client/public/BlackLogo.jpg)
+![Miracle of Luck Logo](https://github.com/Danilov210/Proj2/blob/main/client/public/BlackLogo.jpg)
 
 # Miracle of Luck - Lottery Website
 
