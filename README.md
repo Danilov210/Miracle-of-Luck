@@ -54,14 +54,14 @@ To run the project:
 2. Start the client: `npm start` in the client directory.
 
 ## Contributors
-- Alexander Danilov
-- Mahmoud Kraiem
+- `Alexander Danilov`
+- `Mahmoud Kraiem`
 - Special thanks to `Dr. Zakharia Frenkel` for his guidance and support.
 
 ## MIT License
 
 Copyright (c) 2024  
-Alexander Danilov, Mahmoud Kraiem, ORT Braude College
+`Alexander Danilov`, `Mahmoud Kraiem`, `ORT Braude College`
 
 Permission is hereby granted, free of charge, to any person obtaining a copy  
 of this software and associated documentation files (the "Software"), to deal  
