@@ -56,7 +56,7 @@ To run the project:
 ## Contributors
 - Alexander Danilov
 - Mahmoud Kraiem
-Special thanks to `Dr. Zakharia Frenkel` for his guidance and support.
+- Special thanks to `Dr. Zakharia Frenkel` for his guidance and support.
 
 ## MIT License
 
