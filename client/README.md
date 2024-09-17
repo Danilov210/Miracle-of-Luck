@@ -41,8 +41,8 @@ To set up the client environment for "Miracle of Luck":
 - **├── public/               # Static assets**
 - **├── src/                  # Source code**
 - **│   ├── components/       # Shared components**
-- **|   ├── context/**
-- **|   ├── hooks/            # Route-based components**
+- **│   ├── context/**
+- **│   ├── hooks/            # Route-based components**
 - **│   ├── pages/            # Route-based components**
 - **│   ├── utils/            # Utility functions**
 - **│   └── APP.jsx           # Main application component**
