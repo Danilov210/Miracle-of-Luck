@@ -12,7 +12,6 @@ The client application for "Miracle of Luck" provides a user-friendly interface 
 
 ## Technologies Used
 - **React.js** for building interactive user interfaces.
-- **Redux Toolkit** for state management.
 - **CSS** for styling and layout.
 - **Axios** for API requests to the backend.
 
