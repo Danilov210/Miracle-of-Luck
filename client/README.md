@@ -42,7 +42,7 @@ To set up the client environment for "Miracle of Luck":
 - **├── src/                  # Source code**
 - **│   ├── components/       # Shared components**
 - **│   ├── context/**
-- **│   ├── hooks/            # Route-based components**
+- **│   ├── hooks/            # Custom hooks**
 - **│   ├── pages/            # Route-based components**
 - **│   ├── utils/            # Utility functions**
 - **│   └── APP.jsx           # Main application component**
