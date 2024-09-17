@@ -36,16 +36,15 @@ To set up the client environment for "Miracle of Luck":
 **Ensure that the backend server is running for API interactions.**
 
 ## Directory Structure
-php
-Copy code
-client/
-**├── public/               # Static assets**
-**├── src/                  # Source code**
-**│   ├── components/       # Shared components**
-**│   ├── pages/            # Route-based components**
-**│   ├── redux/            # State management**
-**│   └── App.js            # Main application component**
-**└── package.json          # Project metadata and dependencies**
+
+- **client/**
+- **├── public/               # Static assets**
+- **├── src/                  # Source code**
+- **│   ├── components/       # Shared components**
+- **│   ├── pages/            # Route-based components**
+- **│   ├── redux/            # State management**
+- **│   └── App.js            # Main application component**
+- **└── package.json          # Project metadata and dependencies**
 ## Contributors
 - Alexander Danilov
 - Mahmoud Kraiem
