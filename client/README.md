@@ -41,10 +41,13 @@ To set up the client environment for "Miracle of Luck":
 - **├── public/               # Static assets**
 - **├── src/                  # Source code**
 - **│   ├── components/       # Shared components**
+- **|   ├── context/
+- **|   ├── hooks/            # Route-based components**
 - **│   ├── pages/            # Route-based components**
-- **│   ├── redux/            # State management**
-- **│   └── App.js            # Main application component**
+- **│   ├── utils/            #Utility functions**
+- **│   └── APP.jsx           # Main application component**
 - **└── package.json          # Project metadata and dependencies**
+  
 ## Contributors
 - Alexander Danilov
 - Mahmoud Kraiem
