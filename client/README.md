@@ -39,13 +39,13 @@ To set up the client environment for "Miracle of Luck":
 php
 Copy code
 client/
-├── public/               # Static assets
-├── src/                  # Source code
-│   ├── components/       # Shared components
-│   ├── pages/            # Route-based components
-│   ├── redux/            # State management
-│   └── App.js            # Main application component
-└── package.json          # Project metadata and dependencies
+**├── public/               # Static assets**
+**├── src/                  # Source code**
+**│   ├── components/       # Shared components**
+**│   ├── pages/            # Route-based components**
+**│   ├── redux/            # State management**
+**│   └── App.js            # Main application component**
+**└── package.json          # Project metadata and dependencies**
 ## Contributors
 - Alexander Danilov
 - Mahmoud Kraiem
