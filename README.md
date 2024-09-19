@@ -3,17 +3,17 @@
 # Miracle of Luck - Lottery Website
 
 ## Phase B
-- Phase-A Book
-- Phase-B Book
-- Maintenance Guide
-- User Guide
+- [Phase-A Book](./Documentation/MiracleOfLuckBook_A.pdf)
+- [Phase-B Book](./Documentation/MiracleOfLuckBook_B.pdf)
+- [Maintenance Guide](./Documentation/Maintenance_Guide.pdf)
+- [User Guide](./Documentation/UserGuide.pdf)
 - Presentation PW Phase 2
-- Run Instructions
-- Video User Guide: How to Use Our Website
+- [Run Instructions](./Documentation/RunInstructions.pdf)
+- [Video User Guide: How to Use Our Website](./Documentation/HowToUseWebsite.txt)
 
 ## Overview
 
-"Miracle of Luck" is an innovative online platform designed to transform the lottery experience. Built using the versatile and powerful MERN stack—MongoDB, Express.js, React, and Node.js—our website offers a user-friendly and secure environment for participants to engage in various lottery games. The platform features secure user authentication, intuitive game management, and real-time results updates, making it easy for users to participate and check their luck. With a focus on transparency, fairness, and user engagement, "Miracle of Luck" aims to redefine online lotteries by providing a trustworthy and exciting experience.
+"Miracle of Luck" is an innovative online platform designed to transform the lottery experience. Built using the versatile and powerful VITE stack—MongoDB, Express.js, React, and Node.js—our website offers a user-friendly and secure environment for participants to engage in various lottery games. The platform features secure user authentication, intuitive game management, and real-time results updates, making it easy for users to participate and check their luck. With a focus on transparency, fairness, and user engagement, "Miracle of Luck" aims to redefine online lotteries by providing a trustworthy and exciting experience.
 
 ## Motivation
 
