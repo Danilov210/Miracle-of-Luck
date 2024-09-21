@@ -7,7 +7,7 @@
 - [Phase-B Book](./Documentation/MiracleOfLuckBook_B.pdf)
 - [Maintenance Guide](./Documentation/Maintenance_Guide.pdf)
 - [User Guide](./Documentation/UMiracleofLuck2.pptx)
-- [Presentation PW Phase 2]./Documentation/UserGuide.pdf)
+- [Presentation PW Phase 2](./Documentation/MiracleofLuck2.pptx)
 - [Run Instructions](./Documentation/RunInstructions.pdf)
 - [Video User Guide: How to Use Our Website](./Documentation/HowToUseWebsite.txt)
 
