@@ -1,4 +1,4 @@
-![Miracle of Luck Logo](https://github.com/Danilov210/Proj2/blob/main/client/public/BlackLogo.jpg)
+![Miracle of Luck Logo](https://github.com/Danilov210/Miracle-of-Luck/blob/main/client/public/BlackLogo.jpg)
 
 # Miracle of Luck - Lottery Website
 
@@ -40,7 +40,7 @@ The project addresses the demand for a modern, efficient, and transparent online
 
 To set up the "Miracle of Luck" project environment:
 
-1. Clone the repository: `https://github.com/Danilov210/Proj2`.
+1. Clone the repository: `https://github.com/Danilov210/Miracle-of-Luck`.
 2. Install the dependencies for the server:
    - `cd server`
    - `npm install`
